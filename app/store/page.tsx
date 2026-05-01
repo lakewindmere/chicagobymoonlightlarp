@@ -2,12 +2,12 @@ import { handleCheckout } from '../actions/checkout';
 
 export default function StorePage() {
   const tickets = [
-    { name: 'Neonate (Standard)', priceId: 'price_1TSJcrIwzBgGm4Tdfjlj1MEZ', price: '$25' }
+    { name: 'LARP Admission', priceId: 'price_1TSJcrIwzBgGm4Tdfjlj1MEZ', price: '$25' }
   ];
 
   return (
     <div className="p-10 bg-black min-h-screen text-red-600">
-      <h1 className="text-4xl mb-8 font-serif uppercase tracking-widest">Available Credentials</h1>
+      <h1 className="text-4xl mb-8 font-serif uppercase tracking-widest">Tickets</h1>
       <div className="grid gap-6">
         {tickets.map((ticket) => (
           <div key={ticket.priceId} className="border-2 border-red-900 p-6 rounded-lg bg-zinc-900">

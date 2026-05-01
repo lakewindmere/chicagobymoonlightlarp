@@ -37,7 +37,7 @@ function Navbar() {
         {/* Secondary Menu */}
         <nav className="w-full bg-black py-2 px-6 border-b border-zinc-900">
           <div className="max-w-7xl mx-auto flex justify-center space-x-8">
-            <Link href="/" className="text-red-700 font-serif text-sm uppercase tracking-widest hover:text-red-500">Store</Link>
+            <Link href="/store" className="text-red-700 font-serif text-sm uppercase tracking-widest hover:text-red-500">Store</Link>
             <Link href="/information" className="text-red-700 font-serif text-sm uppercase tracking-widest hover:text-red-500">Information</Link>
           </div>
         </nav>

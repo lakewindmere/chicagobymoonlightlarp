@@ -18,7 +18,7 @@ export default function Home() {
         </div>
         <div>
           <Link 
-            href="/checkout" 
+            href="/store" 
             className="group relative inline-block px-12 py-5 bg-red-700 text-black font-serif font-black uppercase tracking-[0.2em] text-xl transition-all hover:bg-red-600 hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(185,28,28,0.4)]"
           >
             Purchase Your Ticket
