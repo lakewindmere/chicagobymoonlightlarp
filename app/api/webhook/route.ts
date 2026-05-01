@@ -3,78 +3,91 @@ import { createClient } from '@supabase/supabase-js';
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
+import QRCode from 'qrcode'; // Add this import
 import { EmailTemplate } from '@/components/email-template';
+import { render } from '@react-email/render'; // Add this import
+import React from 'react'; // Fix 1
+
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: Request) {
-  const body = await req.text();
-  const headerPayload = await headers(); 
-  const signature = headerPayload.get('Stripe-Signature') as string;
+    const body = await req.text();
+    const headerPayload = await headers();
+    const signature = headerPayload.get('Stripe-Signature') as string;
 
-  let event;
+    let event;
 
-  try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      signature,
-      process.env.STRIPE_WEBHOOK_SECRET!
-    );
-  } catch (err: any) {
-    return new NextResponse(`Webhook Error: ${err.message}`, { status: 400 });
-  }
-
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object as any;
-
-    // Retrieve line items to get the actual Product Name (e.g., "Elder", "Ancilla")
-    const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
-    const productName = lineItems.data[0]?.description || 'Standard';
-
-    const ticketData = {
-      stripe_session_id: session.id,
-      user_email: session.customer_details?.email,
-      ticket_type: productName, 
-      event_month: new Date().toLocaleString('default', { month: 'long', year: 'numeric' }),
-      is_consumed: false,
-    };
-
-    // 1. Insert into Supabase
-    const { error: dbError } = await supabase
-      .from('tickets')
-      .insert([ticketData]);
-
-    if (dbError) {
-      console.error('Supabase Insert Error:', dbError);
-      return new NextResponse('Database Error', { status: 500 });
+    try {
+        event = stripe.webhooks.constructEvent(
+            body,
+            signature,
+            process.env.STRIPE_WEBHOOK_SECRET!
+        );
+    } catch (err: any) {
+        return new NextResponse(`Webhook Error: ${err.message}`, { status: 400 });
     }
 
-    // 2. Send Confirmation Email via Resend
-    const userEmail = session.customer_details?.email;
-    const userName = session.customer_details?.name || 'Guest';
+    if (event.type === 'checkout.session.completed') {
+        const session = event.data.object as any;
 
-    if (userEmail) {
-      try {
-        await resend.emails.send({
-          from: 'Haven <notifications@chicagoinmoonlight.com>',
-          to: [userEmail],
-          subject: 'Your Entry to Chicago In Moonlight',
-          react: EmailTemplate({ 
-            name: userName, 
-            orderId: session.id.slice(-8), // Sending a shortened version of the ID for cleaner look
-          }) as React.ReactElement,
+        const scanUrl = `${baseUrl}/scanner?id=${session.id}`;
+        const qrCodeData = await QRCode.toDataURL(scanUrl, {
+            color: {
+                dark: '#000000',  // Black dots
+                light: '#ffffff'  // White background (crucial for scanner contrast)
+            },
+            margin: 2
         });
-      } catch (emailError) {
-        // We log the error but don't return a 500 because the database part was successful
-        console.error('Resend Email Error:', emailError);
-      }
-    }
-  }
 
-  return new NextResponse('Success', { status: 200 });
+        // Retrieve line items to get the actual Product Name (e.g., "Elder", "Ancilla")
+        const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
+        const productName = lineItems.data[0]?.description || 'Standard';
+
+        const ticketData = {
+            stripe_session_id: session.id,
+            user_email: session.customer_details?.email,
+            ticket_type: productName,
+            event_month: new Date().toLocaleString('default', { month: 'long', year: 'numeric' }),
+            is_consumed: false,
+        };
+
+        // 1. Insert into Supabase
+        const { error: dbError } = await supabase
+            .from('tickets')
+            .insert([ticketData]);
+
+        if (dbError) {
+            console.error('Supabase Insert Error:', dbError);
+            return new NextResponse('Database Error', { status: 500 });
+        }
+
+        // 2. Send Confirmation Email via Resend
+        const userEmail = session.customer_details?.email;
+        const userName = session.customer_details?.name || 'Guest';
+
+        if (userEmail) {
+            const emailHtml = await render(
+                React.createElement(EmailTemplate, {
+                    name: userName,
+                    orderId: session.id, // Using the full session ID for the URL
+                })
+            );
+
+            await resend.emails.send({
+                from: 'Haven <contact@chicago-in-moonlight.com>',
+                to: [userEmail],
+                subject: 'Your Entry to Chicago In Moonlight',
+                html: emailHtml,
+            });
+        }
+    }
+
+    return new NextResponse('Success', { status: 200 });
 }

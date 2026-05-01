@@ -33,7 +33,11 @@ function SuccessContent() {
           </div>
         )}
       </div>
-      
+
+      <div className="text-left text-sm space-y-2 border-t border-zinc-800 pt-6">
+        <p><span className="text-red-700 font-bold uppercase">ID:</span> {sessionId?.slice(-12)}</p>
+      </div>
+
       <Link href="/" className="mt-8 inline-block text-zinc-500 hover:text-red-500 underline text-sm transition">
         Return to Shadows
       </Link>
