@@ -22,7 +22,6 @@ function Navbar() {
   return (
     <>
       <header className="sticky top-0 z-50 shadow-2xl">
-        {/* Primary Banner */}
         <nav className="w-full bg-red-700 py-3 px-6 border-b border-black">
           <div className="max-w-7xl mx-auto flex justify-center">
             <Link 
@@ -34,7 +33,6 @@ function Navbar() {
           </div>
         </nav>
 
-        {/* Secondary Menu */}
         <nav className="w-full bg-black py-2 px-6 border-b border-zinc-900">
           <div className="max-w-7xl mx-auto flex justify-center space-x-8">
             <Link href="/store" className="text-red-700 font-serif text-sm uppercase tracking-widest hover:text-red-500">Store</Link>
@@ -43,11 +41,9 @@ function Navbar() {
         </nav>
       </header>
 
-      {/* NEW: Bottom Navigation Bar */}
       <footer className="fixed bottom-0 left-0 w-full z-50 bg-black/80 backdrop-blur-md border-t border-zinc-800 py-4 px-8">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           
-          {/* Left: Discord Link */}
           <a 
             href="https://discord.gg/azmy2b8Wk" 
             target="_blank" 
@@ -64,7 +60,6 @@ function Navbar() {
             </span>
           </a>
 
-          {/* Right: Email Link */}
           <a 
             href="mailto:chicagoinmoonlight@gmail.com" 
             className="group flex items-center space-x-3"

@@ -1,5 +1,5 @@
 'use server'
-import { stripe } from '@/lib/stripe'; // We'll define this helper in a second
+import { stripe } from '@/lib/stripe';
 import { redirect } from 'next/navigation';
 
 export async function createCheckoutSession(priceId: string) {

@@ -5,15 +5,11 @@ import { QRCodeSVG } from 'qrcode.react';
 import Link from 'next/link';
 import { useEffect, useState, Suspense } from 'react'; // Added Suspense
 
-// 1. Create a sub-component for the actual content
 function SuccessContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('session_id');
-  const [origin, setOrigin] = useState('');
 
-  useEffect(() => {
-    setOrigin(window.location.origin);
-  }, []);
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
   return (
     <div className="border-2 border-red-900 p-8 rounded-lg bg-zinc-900 text-center max-w-md w-full">
@@ -21,9 +17,9 @@ function SuccessContent() {
       <p className="text-zinc-400 mb-8 italic">Present this credential at Ellysium for entrance.</p>
 
       <div className="bg-white p-4 inline-block rounded-md mb-6">
-        {sessionId && origin ? (
-          <QRCodeSVG 
-            value={`${origin}/scanner?id=${sessionId}`} 
+        {sessionId ? (
+          <QRCodeSVG
+            value={`${baseUrl}/scanner?id=${sessionId}`}
             size={200}
             level="H"
           />
@@ -45,7 +41,6 @@ function SuccessContent() {
   );
 }
 
-// 2. The main export wraps the content in Suspense
 export default function SuccessPage() {
   return (
     <main className="flex flex-col items-center justify-center min-h-screen bg-black text-white p-6">

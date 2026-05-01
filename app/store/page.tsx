@@ -4,20 +4,18 @@ import Link from 'next/link';
 import { handleCheckout } from '../actions/checkout';
 
 export default function Home() {
-    // Example ticket tiers - you can later fetch these from Supabase or Stripe
     const ticketTiers = [
         { id: 'standard', name: 'Admission', price: '$25', icon: '🩸', priceId: 'price_1TSJcrIwzBgGm4Tdfjlj1MEZ' }
     ];
-    const merchItems = [
-        { id: 'shirt-1', name: 'Domain Tee', price: '$30', icon: '👕' },
-        { id: 'hoodie-1', name: 'Haven Hoodie', price: '$55', icon: '🧥' },
-        { id: 'pin-1', name: 'Clan Sigil', price: '$15', icon: '🪙' },
-    ];
+    //const merchItems = [
+    //    { id: 'shirt-1', name: 'Domain Tee', price: '$30', icon: '👕' },
+    //    { id: 'hoodie-1', name: 'Haven Hoodie', price: '$55', icon: '🧥' },
+    //    { id: 'pin-1', name: 'Clan Sigil', price: '$15', icon: '🪙' },
+    //];
 
     return (
         <main className="relative flex flex-col items-center min-h-[calc(100vh-168px)] bg-black p-6 overflow-x-hidden">
 
-            {/* Subtitle Section */}
             <div className="text-center mt-12 mb-16 space-y-2">
                 <h2 className="text-red-700 font-serif font-black uppercase tracking-[0.3em] text-4xl md:text-6xl leading-tight drop-shadow-[0_5px_15px_rgba(185,28,28,0.3)]">
                     Night <br />
@@ -27,7 +25,6 @@ export default function Home() {
                     LARP Tickets & Merch
                 </p>
             </div>
-            {/* --- TICKET SECTION --- */}
             <section className="w-full max-w-5xl mb-24">
                 <div className="flex items-center space-x-4 mb-8">
                     <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-zinc-800"></div>
@@ -39,7 +36,6 @@ export default function Home() {
                     {ticketTiers.map((tier) => (
                         <button
                             key={tier.id}
-                            // Bind ensures the priceId is passed correctly on click
                             onClick={handleCheckout.bind(null, tier.priceId)}
                             className="group relative aspect-square bg-zinc-900/30 border border-zinc-800 hover:border-red-700 transition-all duration-500 flex flex-col items-center justify-center overflow-hidden cursor-pointer w-full"
                         >
@@ -59,7 +55,6 @@ export default function Home() {
             </section>
 
             
-            {/* Red Accent at bottom */}
             <div className="mt-20 w-48 h-[2px] bg-gradient-to-r from-transparent via-red-700 to-transparent opacity-50"></div>
         </main>
     );

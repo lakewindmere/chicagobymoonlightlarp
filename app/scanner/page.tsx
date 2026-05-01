@@ -8,25 +8,23 @@ import { Html5QrcodeScanner } from 'html5-qrcode'; // Ensure you ran: npm instal
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || '';
 
-// Initialize Supabase Client
 const supabase = (supabaseUrl && supabaseAnonKey)
     ? createClient(supabaseUrl, supabaseAnonKey)
     : null;
 
 function ScannerContent() {
     const searchParams = useSearchParams();
-    const router = useRouter(); // Initialize router
+    const router = useRouter();
     const ticketId = searchParams.get('id');
 
     const [password, setPassword] = useState('');
     const [isAuth, setIsAuth] = useState(false);
     const [ticket, setTicket] = useState<any>(null);
     const [loading, setLoading] = useState(false);
-    const [cameraActive, setCameraActive] = useState(false); // Track camera state
+    const [cameraActive, setCameraActive] = useState(false);
 
     const STAFF_PASSWORD = process.env.NEXT_PUBLIC_STAFF_PASSWORD;
 
-    // 1. PERSISTENCE: Check if already logged in on page load
     useEffect(() => {
         const savedAuth = sessionStorage.getItem('staff_auth');
         if (savedAuth === 'true') {
@@ -34,7 +32,6 @@ function ScannerContent() {
         }
     }, []);
 
-    // 2. CAMERA LOGIC: Initialize scanner when active
     useEffect(() => {
         if (cameraActive && !ticketId && isAuth) {
             const scanner = new Html5QrcodeScanner(
@@ -63,7 +60,6 @@ function ScannerContent() {
         }
     }, [cameraActive, ticketId, isAuth, router]);
 
-    // 3. AUTO-LOOKUP: Trigger checkTicket
     useEffect(() => {
         if (isAuth && ticketId) {
             checkTicket(ticketId);
@@ -106,8 +102,6 @@ function ScannerContent() {
 
         if (!error) checkTicket(ticketId);
     };
-
-    // --- UI RENDERING ---
 
     if (!isAuth) {
         return (

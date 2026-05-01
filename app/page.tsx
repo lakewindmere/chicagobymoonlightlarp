@@ -11,7 +11,6 @@ export default function Home() {
   const isMaintenanceMode = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'true';
   const staffPassword = process.env.NEXT_PUBLIC_STAFF_PASSWORD;
 
-  // 1. Check for existing authorization on load
   useEffect(() => {
     if (!isMaintenanceMode) {
       setIsAuthorized(true);
@@ -24,7 +23,6 @@ export default function Home() {
     }
   }, [isMaintenanceMode, staffPassword]);
 
-  // 2. Global UI Blackout Logic
   useEffect(() => {
     if (!isAuthorized && isMaintenanceMode) {
       document.body.classList.add('gatekeeper-active');
@@ -37,7 +35,6 @@ export default function Home() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (password === staffPassword) {
-      // 3. Save to localStorage so it persists
       localStorage.setItem('gatekeeper_auth', password);
       setIsAuthorized(true);
       setError(false);
@@ -57,7 +54,7 @@ export default function Home() {
             Domain Restricted
           </h2>
           <p className="text-zinc-500 font-serif italic text-xs mb-8">
-            Provide the passphrase to witness the moonlight.
+            Provide the passphrase.
           </p>
           
           <form onSubmit={handleLogin} className="space-y-4">

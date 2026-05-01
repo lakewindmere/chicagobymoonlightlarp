@@ -3,10 +3,10 @@ import { createClient } from '@supabase/supabase-js';
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
-import QRCode from 'qrcode'; // Add this import
+import QRCode from 'qrcode';
 import { EmailTemplate } from '@/components/email-template';
-import { render } from '@react-email/render'; // Add this import
-import React from 'react'; // Fix 1
+import { render } from '@react-email/render';
+import React from 'react';
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -40,13 +40,12 @@ export async function POST(req: Request) {
         const scanUrl = `${baseUrl}/scanner?id=${session.id}`;
         const qrCodeData = await QRCode.toDataURL(scanUrl, {
             color: {
-                dark: '#000000',  // Black dots
-                light: '#ffffff'  // White background (crucial for scanner contrast)
+                dark: '#000000',
+                light: '#ffffff'
             },
             margin: 2
         });
 
-        // Retrieve line items to get the actual Product Name (e.g., "Elder", "Ancilla")
         const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
         const productName = lineItems.data[0]?.description || 'Standard';
 
@@ -58,7 +57,6 @@ export async function POST(req: Request) {
             is_consumed: false,
         };
 
-        // 1. Insert into Supabase
         const { error: dbError } = await supabase
             .from('tickets')
             .insert([ticketData]);
@@ -68,7 +66,6 @@ export async function POST(req: Request) {
             return new NextResponse('Database Error', { status: 500 });
         }
 
-        // 2. Send Confirmation Email via Resend
         const userEmail = session.customer_details?.email;
         const userName = session.customer_details?.name || 'Guest';
 
@@ -76,7 +73,7 @@ export async function POST(req: Request) {
             const emailHtml = await render(
                 React.createElement(EmailTemplate, {
                     name: userName,
-                    orderId: session.id, // Using the full session ID for the URL
+                    orderId: session.id,
                 })
             );
 

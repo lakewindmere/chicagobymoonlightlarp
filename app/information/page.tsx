@@ -3,7 +3,6 @@ export default function InformationPage() {
         <main className="min-h-screen bg-black text-zinc-300 p-8 md:p-24">
             <div className="max-w-4xl mx-auto">
 
-                {/* Main Page Title */}
                 <header className="mb-20 border-b border-red-900/30 pb-10">
                     <h1 className="text-6xl md:text-8xl font-serif font-black uppercase tracking-[0.3em] text-red-700 leading-none">
                         The <br />
@@ -16,7 +15,6 @@ export default function InformationPage() {
 
                 <div className="space-y-20">
 
-                    {/* Section 1: Rules */}
                     <section>
                         <h2 className="text-2xl md:text-3xl font-serif font-bold uppercase tracking-[0.2em] text-red-700 mb-6 flex items-center">
                             <span className="w-12 h-[1px] bg-red-700 mr-4"></span>
@@ -44,7 +42,6 @@ export default function InformationPage() {
                         </div>
                     </section>
 
-                    {/* Section 2: Logistics */}
                     <section>
                         <h2 className="text-2xl md:text-3xl font-serif font-bold uppercase tracking-[0.2em] text-red-700 mb-6 flex items-center">
                             <span className="w-12 h-[1px] bg-red-700 mr-4"></span>
@@ -61,7 +58,6 @@ export default function InformationPage() {
                             </p>
                         </div>
                     </section>
-                    {/* Section 1: The Haven (Venue) */}
                     <section>
                         <h2 className="text-2xl md:text-3xl font-serif font-bold uppercase tracking-[0.2em] text-red-700 mb-6 flex items-center">
                             <span className="w-12 h-[1px] bg-red-700 mr-4"></span>
@@ -73,7 +69,6 @@ export default function InformationPage() {
                                 <p className="text-red-700 font-mono text-sm uppercase tracking-[0.2em]">1012 N Dearborn St, Chicago, IL 60610</p>
                             </div>
 
-                            {/* Google Maps Embed */}
                             <div className="w-full h-80 bg-zinc-900 border border-zinc-800 rounded overflow-hidden shadow-[0_0_20px_rgba(0,0,0,0.5)]">
                                 <iframe
                                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2969.620465279487!2d-87.63279982424987!3d41.901018763979366!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x880fd34e7250a9e1%3A0xed583c9f6fcf7398!2sThe%20Palette%20%26%20Chisel%20Academy%20of%20Fine%20Arts!5e0!3m2!1sen!2sus!4v1777666323967!5m2!1sen!2sus"
@@ -81,7 +76,6 @@ export default function InformationPage() {
                                     height="100%"
                                     style={{
                                         border: 0,
-                                        // This filter makes the map match your site's dark aesthetic
                                         filter: 'grayscale(1) invert(1) contrast(1.2) opacity(0.8)'
                                     }}
                                     allowFullScreen
@@ -92,14 +86,6 @@ export default function InformationPage() {
                         </div>
                     </section>
                 </div>
-
-                {/* Decorative Footer Element */}
-                <footer className="mt-32 pt-10 border-t border-zinc-900 text-center">
-                    <p className="text-zinc-600 font-serif text-sm uppercase tracking-[0.5em]">
-                        Chicago In Moonlight — MMXXVI
-                    </p>
-                </footer>
-
             </div>
         </main>
     );
