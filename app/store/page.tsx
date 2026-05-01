@@ -31,7 +31,7 @@ export default function Home() {
             <section className="w-full max-w-5xl mb-24">
                 <div className="flex items-center space-x-4 mb-8">
                     <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-zinc-800"></div>
-                    <h3 className="text-zinc-500 font-serif uppercase tracking-[0.4em] text-xs">The Ledger</h3>
+                    <h3 className="text-zinc-500 font-serif uppercase tracking-[0.4em] text-xs">LARP Tickets</h3>
                     <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-zinc-800"></div>
                 </div>
 
