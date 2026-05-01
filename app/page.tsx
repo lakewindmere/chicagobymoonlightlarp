@@ -1,18 +1,89 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 export default function Home() {
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(false);
+
+  const isMaintenanceMode = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'true';
+  const staffPassword = process.env.NEXT_PUBLIC_STAFF_PASSWORD;
+
+  // 1. Check for existing authorization on load
+  useEffect(() => {
+    if (!isMaintenanceMode) {
+      setIsAuthorized(true);
+      return;
+    }
+
+    const savedAuth = localStorage.getItem('gatekeeper_auth');
+    if (savedAuth === staffPassword) {
+      setIsAuthorized(true);
+    }
+  }, [isMaintenanceMode, staffPassword]);
+
+  // 2. Global UI Blackout Logic
+  useEffect(() => {
+    if (!isAuthorized && isMaintenanceMode) {
+      document.body.classList.add('gatekeeper-active');
+    } else {
+      document.body.classList.remove('gatekeeper-active');
+    }
+    return () => document.body.classList.remove('gatekeeper-active');
+  }, [isAuthorized, isMaintenanceMode]);
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password === staffPassword) {
+      // 3. Save to localStorage so it persists
+      localStorage.setItem('gatekeeper_auth', password);
+      setIsAuthorized(true);
+      setError(false);
+    } else {
+      setError(true);
+    }
+  };
+
+  if (!isAuthorized) {
+    return (
+      <main className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black p-6">
+        <div className="w-full max-w-sm border border-red-900 bg-zinc-950 p-8 shadow-[0_0_50px_rgba(185,28,28,0.2)] text-center">
+          <div className="mb-6 grayscale brightness-50">
+             <span className="text-4xl">🩸</span>
+          </div>
+          <h2 className="text-red-700 font-serif text-xl uppercase tracking-[0.3em] mb-2">
+            Domain Restricted
+          </h2>
+          <p className="text-zinc-500 font-serif italic text-xs mb-8">
+            Provide the passphrase to witness the moonlight.
+          </p>
+          
+          <form onSubmit={handleLogin} className="space-y-4">
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="PASSPHRASE"
+              className={`w-full bg-black border ${error ? 'border-red-600' : 'border-zinc-800'} p-3 text-center text-red-700 font-mono focus:outline-none focus:border-red-700 transition-colors`}
+            />
+            <button 
+              type="submit"
+              className="w-full py-3 bg-red-900/10 border border-red-700/50 text-red-700 font-serif uppercase tracking-widest hover:bg-red-700 hover:text-black transition-all"
+            >
+              Enter
+            </button>
+          </form>
+          {error && <p className="text-red-600 text-[10px] mt-4 uppercase tracking-tighter">Access Denied</p>}
+        </div>
+      </main>
+    );
+  }
+
   return (
-    /* 
-      The height is 100vh minus the top nav (approx 104px) and bottom footer (approx 64px).
-      Using overflow-hidden here ensures the red accent stays at the bottom of the viewport 
-      without creating a scrollable area.
-    */
     <main className="relative flex flex-col items-center justify-center h-[calc(100vh-175px)] bg-black p-6 overflow-hidden">
-      
       <div className="text-center space-y-12 max-w-2xl z-10">
-        {/* The Punched-Up Subtitle */}
         <div className="space-y-2">
           <h2 className="text-red-700 font-serif font-black uppercase tracking-[0.3em] text-4xl md:text-6xl leading-tight drop-shadow-[0_5px_15px_rgba(185,28,28,0.3)]">
             A Monthly Larp <br />
@@ -20,7 +91,6 @@ export default function Home() {
           </h2>
         </div>
 
-        {/* The Purchase Action */}
         <div>
           <Link 
             href="/store" 
@@ -31,14 +101,7 @@ export default function Home() {
           </Link>
         </div>
       </div>
-
-      {/* 
-         The Red Accent: 
-         We position this 'absolute' so it sits at the very bottom of the main area, 
-         just above your fixed footer.
-      */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-48 h-[2px] bg-gradient-to-r from-transparent via-red-700 to-transparent opacity-50"></div>
-      
     </main>
   );
 }

@@ -36,3 +36,15 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+body.gatekeeper-active header,
+body.gatekeeper-active footer,
+body.gatekeeper-active nav {
+  display: none !important;
+}
+
+/* Ensure the body doesn't scroll while locked */
+body.gatekeeper-active {
+  overflow: hidden;
+  background-color: black;
+}
