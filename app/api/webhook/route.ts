@@ -2,12 +2,15 @@ import { stripe } from '@/lib/stripe';
 import { createClient } from '@supabase/supabase-js';
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { Resend } from 'resend';
+import { EmailTemplate } from '@/components/email-template';
 
-// Initialize Supabase with Service Role Key (to bypass RLS for this system task)
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: Request) {
   const body = await req.text();
@@ -17,7 +20,6 @@ export async function POST(req: Request) {
   let event;
 
   try {
-    // 1. Verify the webhook signature
     event = stripe.webhooks.constructEvent(
       body,
       signature,
@@ -27,27 +29,50 @@ export async function POST(req: Request) {
     return new NextResponse(`Webhook Error: ${err.message}`, { status: 400 });
   }
 
-  // 2. Handle the "checkout.session.completed" event
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as any;
 
-    // Extract data to save to Supabase
+    // Retrieve line items to get the actual Product Name (e.g., "Elder", "Ancilla")
+    const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
+    const productName = lineItems.data[0]?.description || 'Standard';
+
     const ticketData = {
       stripe_session_id: session.id,
       user_email: session.customer_details?.email,
-      ticket_type: 'Standard', // You can pull specific product names from session.line_items
+      ticket_type: productName, 
       event_month: new Date().toLocaleString('default', { month: 'long', year: 'numeric' }),
       is_consumed: false,
     };
 
-    // 3. Insert into Supabase
-    const { error } = await supabase
+    // 1. Insert into Supabase
+    const { error: dbError } = await supabase
       .from('tickets')
       .insert([ticketData]);
 
-    if (error) {
-      console.error('Supabase Insert Error:', error);
+    if (dbError) {
+      console.error('Supabase Insert Error:', dbError);
       return new NextResponse('Database Error', { status: 500 });
+    }
+
+    // 2. Send Confirmation Email via Resend
+    const userEmail = session.customer_details?.email;
+    const userName = session.customer_details?.name || 'Guest';
+
+    if (userEmail) {
+      try {
+        await resend.emails.send({
+          from: 'Haven <notifications@chicagoinmoonlight.com>',
+          to: [userEmail],
+          subject: 'Your Entry to Chicago In Moonlight',
+          react: EmailTemplate({ 
+            name: userName, 
+            orderId: session.id.slice(-8), // Sending a shortened version of the ID for cleaner look
+          }) as React.ReactElement,
+        });
+      } catch (emailError) {
+        // We log the error but don't return a 500 because the database part was successful
+        console.error('Resend Email Error:', emailError);
+      }
     }
   }
 
