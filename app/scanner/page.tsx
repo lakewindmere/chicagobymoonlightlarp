@@ -4,11 +4,13 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+
 // Initialize Supabase Client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = (supabaseUrl && supabaseAnonKey) 
+  ? createClient(supabaseUrl, supabaseAnonKey) 
+  : null;
 
 export default function ScannerPage({
   searchParams,
@@ -30,6 +32,8 @@ export default function ScannerPage({
   const checkTicket = async (ticketId: string) => {
     setLoading(true);
     setErrorMsg(null);
+
+    if (!supabase) return;
     
     const { data, error } = await supabase
       .from('tickets')
@@ -56,6 +60,8 @@ export default function ScannerPage({
   // Function to mark ticket as used
   const consumeTicket = async () => {
     if (!searchParams.id) return;
+
+    if (!supabase) return;
     
     const { error } = await supabase
       .from('tickets')
