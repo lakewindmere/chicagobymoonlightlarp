@@ -19,6 +19,18 @@
   }
 }
 
+/* Custom Gothic Heading Style */
+.vtm-heading {
+  @apply font-serif uppercase font-black text-red-700 leading-none mb-6;
+  letter-spacing: 0.25em;
+  text-shadow: 2px 2px 0px rgba(0,0,0,1), 4px 4px 0px rgba(127, 29, 29, 0.2);
+}
+
+/* Sub-heading for that "Chapter Title" look */
+.vtm-subheading {
+  @apply font-serif italic text-zinc-500 text-lg mb-8 block border-l-2 border-red-800 pl-4;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);

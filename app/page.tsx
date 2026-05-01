@@ -1,11 +1,35 @@
-export default function LandingPage() {
+'use client';
+
+import Link from 'next/link';
+
+export default function Home() {
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen bg-black text-red-700 p-8">
-      <h1 className="text-6xl font-bold mb-4 tracking-tighter">THE KINDRED GATHERING</h1>
-      <p className="text-xl italic mb-8 text-gray-400">Chicago by Night: A Monthly Masquerade LARP</p>
-      <a href="/store" className="px-6 py-3 border border-red-700 hover:bg-red-900 hover:text-white transition">
-        Enter the Haven (Store)
-      </a>
+    /* h-[calc(100vh-104px)] subtracts the height of your two-tier navbar 
+       to ensure zero vertical scrolling on the screen */
+    <main className="flex flex-col items-center justify-center h-[calc(100vh-104px)] bg-black p-6 overflow-hidden">
+      
+      <div className="text-center space-y-12 max-w-2xl">
+        
+        {/* The Punched-Up Subtitle */}
+        <div className="space-y-2">
+          <h2 className="text-zinc-200 font-serif font-black uppercase tracking-[0.3em] text-4xl md:text-6xl leading-tight drop-shadow-[0_5px_15px_rgba(185,28,28,0.3)]">
+            Monthly Larp Event <br />
+          </h2>
+        </div>
+        <div>
+          <Link 
+            href="/checkout" 
+            className="group relative inline-block px-12 py-5 bg-red-700 text-black font-serif font-black uppercase tracking-[0.2em] text-xl transition-all hover:bg-red-600 hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(185,28,28,0.4)]"
+          >
+            Purchase Your Ticket
+            <span className="absolute inset-0 border border-black/20 m-1"></span>
+          </Link>
+        </div>
+
+      </div>
+
+      {/* Decorative Floor Detail to ground the page without scrolling */}
+      <div className="absolute bottom-10 w-32 h-[1px] bg-gradient-to-r from-transparent via-red-900 to-transparent"></div>
     </main>
   );
 }
