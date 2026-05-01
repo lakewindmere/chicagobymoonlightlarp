@@ -78,9 +78,9 @@ export async function POST(req: Request) {
             );
 
             await resend.emails.send({
-                from: 'Haven <contact@chicago-in-moonlight.com>',
+                from: 'Chicago in Moonlight <contact@chicago-in-moonlight.com>',
                 to: [userEmail],
-                subject: 'Your Entry to Chicago In Moonlight',
+                subject: 'Chicago In Moonlight Admission Ticket',
                 html: emailHtml,
             });
         }
