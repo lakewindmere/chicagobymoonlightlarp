@@ -25,7 +25,7 @@ export const EmailTemplate = ({ name, orderId }: EmailTemplateProps) => (
           </Text>
           
           <Button
-            href={`https://chicago-in-moonlight.com/success?id=${orderId}`}
+            href={`https://chicago-in-moonlight.com/success?session_id=${orderId}`}
             style={{
               backgroundColor: '#b91c1c',
               color: '#000',
