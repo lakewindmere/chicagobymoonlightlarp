@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useCart } from "../context/CartContext";
 import { Cinzel_Decorative, Cinzel } from 'next/font/google';
+import { useState } from "react";
+import { usePathname } from "next/navigation";
 
 const cinzel = Cinzel_Decorative({
     weight: '700',
@@ -16,8 +18,17 @@ const cinzelBody = Cinzel({
     display: 'swap',
 });
 
+
+
 export function Navbar() {
     const { cartCount } = useCart();
+    const [isOpen, setIsOpen] = useState(false);
+    const pathname = usePathname();
+
+    const navLinks = [
+        { name: 'Character Creation', href: '/character-creator' },
+        { name: 'Downtime Actions', href: '/downtime' },
+    ];
 
     return (
         <header className="sticky top-0 z-50 shadow-2xl">
@@ -60,6 +71,46 @@ export function Navbar() {
                         >
                             Night Market
                         </Link>
+                        <div
+                            className="relative group h-full flex items-center"
+                            onMouseEnter={() => setIsOpen(true)}
+                            onMouseLeave={() => setIsOpen(false)}
+                        >
+                            {/* The Trigger - Now looks exactly like a standard Nav Link */}
+                            <button className={`${cinzelBody.className} text-[11px] uppercase tracking-[0.3em] transition-all duration-300 flex items-center gap-2 ${isOpen ? 'text-red-700' : 'text-zinc-400 group-hover:text-red-700'
+                                }`}>
+                                In-Character
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className={`h-2.5 w-2.5 transition-transform duration-500 ${isOpen ? 'rotate-180 text-red-700' : 'text-zinc-600'}`}
+                                    fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+
+                            {/* The Dropdown Menu */}
+                            <div className={`absolute top-[100%] right-0 w-60 bg-black border border-zinc-900 shadow-[0_20px_50px_rgba(0,0,0,0.9)] transition-all duration-500 transform origin-top ${isOpen ? 'opacity-100 scale-y-100' : 'opacity-0 scale-y-0 pointer-events-none'
+                                }`}>
+                                {/* Decorative Top Accent Line */}
+                                <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-red-900/50 to-transparent"></div>
+
+                                <div className="py-1 flex flex-col">
+                                    {navLinks.map((link) => (
+                                        <Link
+                                            key={link.href}
+                                            href={link.href}
+                                            className={`px-6 py-4 text-[9px] uppercase tracking-[0.3em] transition-all duration-300 border-l-2 ${pathname === link.href
+                                                    ? 'border-red-700 text-red-500 bg-red-950/5'
+                                                    : 'border-transparent text-zinc-500 hover:text-red-600 hover:bg-red-950/5 hover:border-red-900/50'
+                                                }`}
+                                        >
+                                            {link.name}
+                                        </Link>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Right-aligned Cart Icon */}
