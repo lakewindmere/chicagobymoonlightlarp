@@ -22,6 +22,7 @@ function ScannerContent() {
     const [ticket, setTicket] = useState<any>(null);
     const [loading, setLoading] = useState(false);
     const [cameraActive, setCameraActive] = useState(false);
+    const [redeemAmount, setRedeemAmount] = useState(1);
 
     const STAFF_PASSWORD = process.env.NEXT_PUBLIC_STAFF_PASSWORD;
 
@@ -35,7 +36,7 @@ function ScannerContent() {
     useEffect(() => {
         if (cameraActive && !ticketId && isAuth) {
             const scanner = new Html5QrcodeScanner(
-                "reader", 
+                "reader",
                 { fps: 10, qrbox: { width: 250, height: 250 } },
                 false
             );
@@ -52,7 +53,7 @@ function ScannerContent() {
                 } catch (e) {
                     console.error("Not a valid URL QR code");
                 }
-            }, () => {});
+            }, () => { });
 
             return () => {
                 scanner.clear().catch(e => console.error("Scanner cleanup error", e));
@@ -86,21 +87,30 @@ function ScannerContent() {
 
         if (!error && data) {
             setTicket(data);
+            // Default redeem amount to the remaining tickets
+            setRedeemAmount(1);
         } else {
             setTicket(null);
-            console.error("Ticket not found");
         }
         setLoading(false);
     };
 
-    const consumeTicket = async () => {
-        if (!ticketId || !supabase) return;
+    const consumeTickets = async () => {
+        if (!ticket || !supabase || redeemAmount < 1) return;
+
+        const newRedeemedCount = ticket.redeemed_count + redeemAmount;
+
+        if (newRedeemedCount > ticket.quantity) {
+            alert("Cannot redeem more than purchased.");
+            return;
+        }
+
         const { error } = await supabase
             .from('tickets')
-            .update({ is_consumed: true })
-            .eq('stripe_session_id', ticketId);
+            .update({ redeemed_count: newRedeemedCount })
+            .eq('stripe_session_id', ticket.stripe_session_id);
 
-        if (!error) checkTicket(ticketId);
+        if (!error) checkTicket(ticket.stripe_session_id);
     };
 
     if (!isAuth) {
@@ -126,7 +136,7 @@ function ScannerContent() {
                 <div className="flex justify-between items-end mb-8 border-b border-zinc-800 pb-4">
                     <h1 className="text-xl font-serif text-red-600 uppercase tracking-tighter">Scanner Active</h1>
                     {ticketId && (
-                        <button 
+                        <button
                             onClick={() => { setTicket(null); router.push('/scanner'); }}
                             className="text-[10px] text-zinc-500 uppercase hover:text-red-500"
                         >
@@ -138,19 +148,19 @@ function ScannerContent() {
                 {!ticketId ? (
                     <div className="space-y-4">
                         {!cameraActive ? (
-                            <button 
+                            <button
                                 onClick={() => setCameraActive(true)}
                                 className="w-full aspect-square border-2 border-dashed border-zinc-800 rounded-lg flex flex-col items-center justify-center space-y-4 hover:border-red-900 transition-colors bg-zinc-900/50 group"
                             >
                                 <div className="p-4 rounded-full bg-red-900/10 text-red-900 group-hover:text-red-600 group-hover:bg-red-900/20 transition-all">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>
                                 </div>
                                 <span className="text-zinc-500 font-serif italic uppercase tracking-widest text-sm">Tap to scan credential</span>
                             </button>
                         ) : (
                             <div className="overflow-hidden rounded-lg border-2 border-red-900 bg-black">
                                 <div id="reader" className="w-full"></div>
-                                <button 
+                                <button
                                     onClick={() => setCameraActive(false)}
                                     className="w-full py-4 bg-zinc-900 text-zinc-400 font-bold uppercase text-xs tracking-widest"
                                 >
@@ -164,7 +174,7 @@ function ScannerContent() {
                         {loading ? (
                             <p className="text-center animate-pulse py-10 text-zinc-500 italic">Checking the ledger...</p>
                         ) : ticket ? (
-                            <div className={`p-6 rounded-lg border-2 transition-colors ${ticket.is_consumed ? 'border-zinc-700 bg-zinc-900' : 'border-green-600 bg-green-950/20'}`}>
+                            <div className={`p-6 rounded-lg border-2 transition-colors ${ticket.redeemed_count >= ticket.quantity ? 'border-zinc-700 bg-zinc-900' : 'border-green-600 bg-green-950/20'}`}>
 
                                 <div className="mb-4">
                                     <label className="text-[10px] uppercase tracking-widest text-zinc-500">Guest Identity</label>
@@ -178,39 +188,56 @@ function ScannerContent() {
                                     </div>
                                     <div>
                                         <label className="text-[10px] uppercase tracking-widest text-zinc-500">Status</label>
-                                        <p className={`font-bold ${ticket.is_consumed ? 'text-zinc-500' : 'text-green-500'}`}>
-                                            {ticket.is_consumed ? 'VOID / USED' : 'ACTIVE'}
+                                        <p className={`font-bold ${ticket.redeemed_count >= ticket.quantity ? 'text-zinc-500' : 'text-green-500'}`}>
+                                            {ticket.redeemed_count} / {ticket.quantity} ADMITTED
                                         </p>
                                     </div>
                                 </div>
 
-                                <div className="mb-8 p-3 bg-black/40 rounded border border-zinc-800">
-                                    <label className="text-[10px] uppercase tracking-widest text-zinc-500 block mb-1">Valid for Gathering</label>
-                                    <p className="text-lg font-serif italic text-zinc-200">
-                                        {new Date(ticket.created_at).toLocaleDateString('en-US', {
-                                            month: 'long',
-                                            year: 'numeric'
-                                        })}
-                                    </p>
-                                </div>
+                                {/* Multi-Ticket Redemption Section */}
+                                {ticket.redeemed_count < ticket.quantity ? (
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between bg-black/40 p-4 border border-zinc-800 rounded">
+                                            <span className="text-xs uppercase tracking-widest text-zinc-400 font-serif">Amount to Admit</span>
+                                            <div className="flex items-center space-x-6">
+                                                <button
+                                                    onClick={() => setRedeemAmount(Math.max(1, redeemAmount - 1))}
+                                                    className="w-10 h-10 flex items-center justify-center border border-zinc-700 text-red-700 text-2xl hover:bg-red-900/10 active:scale-95 transition-all"
+                                                >
+                                                    -
+                                                </button>
+                                                <span className="text-2xl font-mono font-bold w-4 text-center">{redeemAmount}</span>
+                                                <button
+                                                    onClick={() => setRedeemAmount(Math.min(ticket.quantity - ticket.redeemed_count, redeemAmount + 1))}
+                                                    className="w-10 h-10 flex items-center justify-center border border-zinc-700 text-red-700 text-2xl hover:bg-red-900/10 active:scale-95 transition-all"
+                                                >
+                                                    +
+                                                </button>
+                                            </div>
+                                        </div>
 
-                                {!ticket.is_consumed ? (
-                                    <button
-                                        onClick={consumeTicket}
-                                        className="w-full py-5 bg-green-600 hover:bg-green-500 text-black font-black text-2xl rounded shadow-[0_0_20px_rgba(22,163,74,0.4)] transition-all uppercase"
-                                    >
-                                        GRANT ENTRY
-                                    </button>
+                                        <button
+                                            onClick={consumeTickets}
+                                            className="w-full py-5 bg-green-600 hover:bg-green-500 text-black font-black text-xl rounded shadow-[0_0_20px_rgba(22,163,74,0.3)] transition-all uppercase"
+                                        >
+                                            Admit {redeemAmount} Guest{redeemAmount > 1 ? 's' : ''}
+                                        </button>
+                                    </div>
                                 ) : (
-                                    <div className="text-center py-4 bg-zinc-800 text-zinc-400 font-bold rounded uppercase tracking-widest border border-zinc-700">
-                                        Already Admitted
+                                    <div className="text-center py-6 bg-zinc-800 text-zinc-400 font-bold rounded uppercase tracking-[0.2em] border border-zinc-700">
+                                        Full Party Admitted
                                     </div>
                                 )}
+
+                                <div className="mt-6 pt-6 border-t border-zinc-800">
+                                    <label className="text-[10px] uppercase tracking-widest text-zinc-500 block mb-1">Session Reference</label>
+                                    <p className="text-xs font-mono text-zinc-500 truncate">{ticket.stripe_session_id}</p>
+                                </div>
                             </div>
                         ) : (
                             <div className="p-8 bg-red-900/10 border border-red-900 text-red-500 text-center rounded-lg">
-                                <p className="font-bold uppercase tracking-widest mb-2">Ticket Not Found</p>
-                                <button onClick={() => router.push('/scanner')} className="text-sm underline">Try Again</button>
+                                <p className="font-bold uppercase tracking-widest mb-2">Manifest Entry Not Found</p>
+                                <button onClick={() => router.push('/scanner')} className="text-sm underline">Reset Scanner</button>
                             </div>
                         )}
                     </div>
