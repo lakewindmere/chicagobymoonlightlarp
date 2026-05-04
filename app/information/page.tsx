@@ -35,15 +35,11 @@ export default function InformationPage() {
         <main className="min-h-screen bg-black text-zinc-400 p-8 md:p-24">
             <div className="max-w-4xl mx-auto">
 
-                {/* Unified Header */}
-                <header className="mb-24 border-b border-red-900/20 pb-12 text-center md:text-left">
-                    <h1 className={`${cinzel.className} text-4xl md:text-5xl font-normal uppercase tracking-[0.6em] text-red-700/80`}>
-                        Information
-                    </h1>
-                    <p className={`${cinzel.className} mt-6 text-zinc-600 italic text-base tracking-[0.3em]`}>
-                        "Order must be maintained, even in the shadows."
-                    </p>
-                </header>
+                <div className="text-center mt-12 mb-16 space-y-2">
+                <h2 className="text-zinc-200 font-serif font-black uppercase tracking-[0.3em] text-4xl md:text-6xl leading-tight">
+                    Information
+                </h2>
+            </div>
 
                 <div className="space-y-32">
 
@@ -88,8 +84,8 @@ export default function InformationPage() {
                                         <div
                                             key={index}
                                             className={`flex justify-between items-center p-5 border transition-all duration-500 ${isPast
-                                                    ? 'opacity-20 grayscale border-transparent'
-                                                    : 'bg-zinc-950 border-red-900/20 hover:border-red-700/50 shadow-lg'
+                                                ? 'opacity-20 grayscale border-transparent'
+                                                : 'bg-zinc-950 border-red-900/20 hover:border-red-700/50 shadow-lg'
                                                 }`}
                                         >
                                             {/* Left: Month */}
