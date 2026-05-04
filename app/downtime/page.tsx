@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import LZString from 'lz-string';
 import { Cinzel } from 'next/font/google';
@@ -77,6 +77,37 @@ export default function DowntimePage() {
         hasTroublemaker: false, // Troublemaker Flaw notation
     });
 
+    const [isChecking, setIsChecking] = useState(true);
+
+    useEffect(() => {
+        const checkExistingSubmission = async () => {
+            if (!character?.id) return;
+
+            setIsChecking(true);
+            const currentMonthYear = `${new Date().toLocaleString('default', { month: 'long' })} ${new Date().getFullYear()}`;
+
+            try {
+                console.log(currentMonthYear, character.uid);
+                const { data, error } = await supabase
+                    .from('downtime_submissions')
+                    .select('id')
+                    .eq('character_id', character.uid)
+                    .eq('submission_month', currentMonthYear)
+                    .maybeSingle(); // Returns null instead of an error if no row is found
+                console.log(data);
+                if (data) {
+                    setIsSubmitted(true); // If a record exists, jump straight to the Success/View screen
+                }
+            } catch (err) {
+                console.error("Error checking submissions:", err);
+            } finally {
+                setIsChecking(false);
+            }
+        };
+
+        checkExistingSubmission();
+    }, [character]);
+
     const paginate = (newDirection: number) => {
         const next = currentPage + newDirection;
         if (next >= 1 && next <= 2) {
@@ -118,6 +149,7 @@ export default function DowntimePage() {
         };
         reader.readAsText(file);
     };
+
 
     if (isSubmitted) {
         return (
@@ -227,6 +259,16 @@ export default function DowntimePage() {
                     </div>
                 </div>
             </main>
+        );
+    }
+
+    if (isChecking) {
+        return (
+            <div className="max-w-5xl mx-auto px-4 py-24 text-center font-geist">
+                <p className="text-[10px] uppercase tracking-[0.4em] text-zinc-700 animate-pulse">
+                    Authenticating Character Dossier...
+                </p>
+            </div>
         );
     }
 

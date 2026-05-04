@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import AttributeDots from './attributeDots';
 import LZString from 'lz-string';
 import { createClient } from '@supabase/supabase-js';
+import { Suspense } from 'react';
 
 const cinzel = Cinzel({ subsets: ['latin'], weight: ['400', '700', '900'] });
 
@@ -25,6 +26,20 @@ const supabase = createClient(
 );
 
 export default function CharacterCreator() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-black flex items-center justify-center">
+                <p className={`${cinzel.className} text-red-700 tracking-[0.3em] animate-pulse`}>
+                    Initializing Dossier Protocol...
+                </p>
+            </div>
+        }>
+            <CharacterCreatorContent />
+        </Suspense>
+    );
+}
+
+function CharacterCreatorContent() {
 
     const syncToSupabase = async (fullState: any) => {
         const { error } = await supabase
@@ -344,6 +359,7 @@ export default function CharacterCreator() {
     if (isFinalized) {
         return (
             <main className="min-h-screen bg-black text-zinc-400 p-4 md:p-12 flex flex-col items-center justify-center">
+                
                 <div className="max-w-md w-full bg-zinc-950 border border-red-900/50 p-8 rounded-sm shadow-[0_0_50px_rgba(153,27,27,0.2)] text-center">
 
                     {/* Header */}
