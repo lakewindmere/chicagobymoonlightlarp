@@ -25,6 +25,7 @@ export function Footer() {
         {/* Email Link */}
         <a 
           href="mailto:contact@chicago-in-moonlight.com" 
+          target="_blank"
           className="group flex items-center space-x-3"
         >
            <span className="hidden md:block text-[10px] uppercase tracking-[0.2em] text-zinc-500 group-hover:text-red-700 transition-colors">
