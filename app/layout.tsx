@@ -5,6 +5,7 @@ import { Navbar } from "./components/navbar";
 import "./globals.css";
 import { CartProvider, useCart } from "./context/CartContext";
 import { Footer } from "./components/footer";
+import { Cinzel_Decorative } from 'next/font/google';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,6 +17,11 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const cinzelDecorative = Cinzel_Decorative({
+  weight: '700', // This is the "Bold" weight
+  subsets: ['latin'],
+  variable: '--font-cinzel-decorative', // Defining a CSS variable
+});
 
 export const metadata: Metadata = {
   title: "Chicago In Moonlight",

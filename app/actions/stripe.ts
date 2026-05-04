@@ -14,31 +14,27 @@ export async function createCheckoutSession(priceId: string) {
 }
 
 export async function getActiveProducts() {
-  const products = await stripe.products.list({
-    active: true,
-  });
-
-  // Fetch all prices and group them by product
+  const products = await stripe.products.list({ active: true });
   const allPrices = await stripe.prices.list({ active: true });
 
   return products.data.map((product) => {
-    // Filter prices belonging to this specific product
     const productPrices = allPrices.data
       .filter(p => p.product === product.id)
       .map(p => ({
         id: p.id,
-        // Use lookup_key or metadata for the size label
         label: p.lookup_key || p.metadata.size || 'Standard',
         unit_amount: p.unit_amount ? p.unit_amount / 100 : 0
-      }));
+      }))
+      // Sort prices from lowest to highest
+      .sort((a, b) => a.unit_amount - b.unit_amount);
 
     return {
       productId: product.id,
       name: product.name,
-      // Default to the first price found
+      // Use the first (lowest) price for the display
       priceId: productPrices[0]?.id || '', 
-      price: productPrices[0]?.unit_amount || 0,
-      variants: productPrices, // Pass the array of prices/sizes
+      price: productPrices[0]?.unit_amount || 0, 
+      variants: productPrices,
       image: product.images[0] || null,
       icon: product.metadata.icon || '🩸',
       category: product.metadata.category || 'Other',
