@@ -7,21 +7,49 @@ import { getActiveProducts } from '../actions/stripe';
 import { ProductModal } from '../components/product-modal';
 
 export interface ProductVariant {
-  id: string;
-  label: string;
-  unit_amount: number;
+    id: string;
+    label: string;
+    unit_amount: number;
 }
 
 export interface StripeProduct {
-  productId: string; // Stripe Product ID
-  priceId: string;   // Current selected Price ID
-  name: string;
-  price: number;
-  image: string | null;
-  icon: string;
-  category: string;
-  description: string | null;
-  variants: ProductVariant[]; // Added variants
+    productId: string; // Stripe Product ID
+    priceId: string;   // Current selected Price ID
+    name: string;
+    price: number;
+    image: string | null;
+    icon: string;
+    category: string;
+    description: string | null;
+    variants: ProductVariant[]; // Added variants
+}
+
+function getNextGameDate() {
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth();
+
+    function findLastSaturday(y: number, m: number) {
+        const date = new Date(y, m + 1, 0); // Last day of the month
+        while (date.getDay() !== 6) {
+            date.setDate(date.getDate() - 1);
+        }
+        return date;
+    }
+
+    let nextGame = findLastSaturday(currentYear, currentMonth);
+
+    // If today is AFTER the last Saturday of this month, get next month's
+    if (today.getDate() > nextGame.getDate() && today.getMonth() === nextGame.getMonth()) {
+        nextGame = findLastSaturday(currentYear, currentMonth + 1);
+    }
+
+    return nextGame.toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+    });
 }
 
 export default function StorePage() {
@@ -29,6 +57,8 @@ export default function StorePage() {
     const [products, setProducts] = useState<StripeProduct[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedProduct, setSelectedProduct] = useState<StripeProduct | null>(null);
+
+    const nextGameDate = getNextGameDate();
 
     useEffect(() => {
         async function loadProducts() {
@@ -120,11 +150,12 @@ export default function StorePage() {
             ))}
 
             {selectedProduct && (
-              <ProductModal 
-                product={selectedProduct} 
-                isOpen={!!selectedProduct} 
-                onClose={() => setSelectedProduct(null)} 
-              />
+                <ProductModal
+                    product={selectedProduct}
+                    isOpen={!!selectedProduct}
+                    onClose={() => setSelectedProduct(null)}
+                    subtitle={selectedProduct.category.toLowerCase() === 'ticket' ? `Next Gathering: ${nextGameDate}` : undefined}
+                />
             )}
 
             <div className="mt-10 w-48 h-[2px] bg-gradient-to-r from-transparent via-red-700 to-transparent opacity-50"></div>

@@ -8,9 +8,10 @@ interface ProductModalProps {
     product: StripeProduct;
     isOpen: boolean;
     onClose: () => void;
+    subtitle?: string;
 }
 
-export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
+export function ProductModal({ product, isOpen, onClose, subtitle }: ProductModalProps) {
     const [selectedPriceId, setSelectedPriceId] = useState(product.priceId);
     const [quantity, setQuantity] = useState(1);
     const [isAnimating, setIsAnimating] = useState(false);
@@ -140,6 +141,11 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                     <div className="p-8 flex flex-col justify-between">
                         <div>
                             <h3 className="text-2xl font-serif font-black uppercase tracking-widest text-red-700 mb-2">{product.name}</h3>
+                            {subtitle && (
+                                <p className="text-zinc-200 font-serif font-bold text-sm uppercase tracking-[0.2em] mb-2">
+                                    {subtitle}
+                                </p>
+                            )}
                             <p className="text-zinc-400 text-sm italic mb-6">{product.description}</p>
                             <p className="text-xl font-mono text-zinc-100 mb-8">${product.price}</p>
                         </div>
