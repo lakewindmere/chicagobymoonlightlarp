@@ -26,6 +26,9 @@ const cinzelDecorative = Cinzel_Decorative({
 export const metadata: Metadata = {
   title: "Chicago In Moonlight",
   description: "A World of Darkness LARP Experience",
+  icons: {
+    icon: '/favicon.ico', // or '/icon.png' if you renamed it
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
