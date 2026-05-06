@@ -204,19 +204,6 @@ export default function DowntimePage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
 
-                        {/* Left Side: File Upload */}
-                        <div className="space-y-6 border-r border-zinc-900 pr-12">
-                            <h2 className={`${cinzel.className} text-xs uppercase tracking-[0.2em] text-zinc-200`}>Local Archive</h2>
-                            <p className="text-[10px] leading-relaxed text-zinc-500">Upload your local dossier</p>
-                            <input type="file" id="dossier-up" accept=".json" className="hidden" onChange={handleFileUpload} />
-                            <button
-                                onClick={() => document.getElementById('dossier-up')?.click()}
-                                className="w-full py-3 border border-zinc-800 text-zinc-400 uppercase tracking-widest text-[9px] hover:bg-zinc-900 hover:text-white transition-all"
-                            >
-                                Upload Dossier
-                            </button>
-                        </div>
-
                         {/* Right Side: Cloud Search */}
                         <div className="space-y-4">
                             <h2 className={`${cinzel.className} text-xs uppercase tracking-[0.2em] text-zinc-200`}>Cloud Registry</h2>

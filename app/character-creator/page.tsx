@@ -376,7 +376,7 @@ function CharacterCreatorContent() {
                             <div className="absolute inset-2 border border-zinc-900"></div>
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
-                                className="h-12 w-12 text-red-900/40 group-hover:text-red-700 transition-colors"
+                                className="h-12 w-12 text-red-700"
                                 fill="none" viewBox="0 0 24 24" stroke="currentColor"
                             >
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -385,33 +385,18 @@ function CharacterCreatorContent() {
                     </div>
 
                     <div className="space-y-4">
-                        <p className={`${cinzel.className} text-[11px] text-zinc-500 leading-relaxed uppercase tracking-widest`}>
-                            Your digital record is ready. Download the <span className="text-zinc-200">Dossier</span> file to your device. Please hold to this record for submitting your Down Time Actions and referencing In-Game.
+                        <p className={`${cinzel.className} text-[11px] text-zinc-500 leading-relaxed tracking-widest`}>
+                            Your dossier has been saved. It can be retrieved later for submitting your Down Time Actions and referencing In-Game.
                         </p>
 
-                        <div className="pt-6 flex flex-col gap-3">
-                            {/* Primary Action: Download */}
-                            <button
-                                onClick={saveCharacterToFile}
-                                className="bg-red-950/20 border border-red-700 py-4 text-red-700 uppercase tracking-[0.3em] text-xs font-bold hover:bg-red-700 hover:text-black transition-all duration-500 shadow-[0_0_20px_rgba(153,27,27,0.2)]"
-                            >
-                                Download Dossier
-                            </button>
-
+                        <div className="text-center pt-6 flex flex-col gap-3">
                             {/* Secondary Actions */}
                             <div className="flex justify-between items-center mt-2 px-1">
                                 <button
                                     onClick={() => setIsFinalized(false)}
-                                    className="text-[9px] uppercase tracking-[0.2em] text-zinc-700 hover:text-zinc-400 transition-colors italic"
+                                    className="text-[9px] tracking-[0.2em] text-zinc-700 hover:text-zinc-400 transition-colors italic"
                                 >
                                     ← Return to Editor
-                                </button>
-
-                                <button
-                                    onClick={handleCopy}
-                                    className="text-[9px] uppercase tracking-[0.2em] text-zinc-700 hover:text-zinc-400 transition-colors italic"
-                                >
-                                    {copied ? "Link Copied" : "Copy Backup URL"}
                                 </button>
                             </div>
                         </div>
