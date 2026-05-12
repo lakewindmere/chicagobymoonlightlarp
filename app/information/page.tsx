@@ -145,7 +145,7 @@ export default function InformationPage() {
 
                             <div className="w-full h-96 bg-zinc-900 border border-red-900/20 rounded-sm overflow-hidden shadow-2xl relative">
                                 <iframe
-                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2969.6586392067!2d-87.63223282346!3d41.90128917124016!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x880fd34e12720931%3A0x6968058444e99ef3!2sPalette%20%26%20Chisel%20Academy%20of%20Fine%20Arts!5e0!3m2!1sen!2sus!4v1700000000000"
+                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2969.620465279487!2d-87.63279982424987!3d41.901018763979366!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x880fd34e7250a9e1%3A0xed583c9f6fcf7398!2sThe%20Palette%20%26%20Chisel%20Academy%20of%20Fine%20Arts!5e0!3m2!1sen!2sus!4v1777666323967!5m2!1sen!2sus"
                                     width="100%"
                                     height="100%"
                                     style={{
