@@ -37,7 +37,10 @@ export async function getActiveProducts() {
       price: productPrices[0]?.unit_amount || 0, 
       variants: productPrices,
       image: product.images[0] || null,
-      icon: product.metadata.icon || (product.name.toLowerCase().includes(`donation`) ? '❤️' : '🩸'),
+      icon: product.metadata.icon || 
+      (product.name.toLowerCase().includes(`donation`) ? '❤️' : 
+      (product.name.toLowerCase().includes(`student`) ? '🎟️' 
+      : '🩸')),
       category: product.metadata.category || 'Other',
       description: product.description,
     };
