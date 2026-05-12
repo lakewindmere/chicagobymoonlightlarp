@@ -8,6 +8,7 @@ import { Html5QrcodeScanner } from 'html5-qrcode'; // Ensure you ran: npm instal
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || '';
 
+
 const supabase = (supabaseUrl && supabaseAnonKey)
     ? createClient(supabaseUrl, supabaseAnonKey)
     : null;
@@ -26,12 +27,60 @@ function ScannerContent() {
 
     const STAFF_PASSWORD = process.env.NEXT_PUBLIC_STAFF_PASSWORD;
 
+    // 1. Add these new states at the top of ScannerContent
+    const [donationPool, setDonationPool] = useState<{ id: string, quantity: number, redeemed_count: number } | null>(null);
+    const [redeemDonationAmount, setRedeemDonationAmount] = useState(1);
+
+    // 2. Create the fetcher for the Donation Ticket
+    const fetchDonationPool = async () => {
+        if (!supabase) return;
+        const { data } = await supabase
+            .from('tickets')
+            .select('*')
+            .eq('ticket_type', 'Donation Ticket')
+            .maybeSingle();
+
+        if (data) {
+            setDonationPool(data);
+        }
+    };
+
+    // 4. Create the redemption handler for donations
+    const consumeDonation = async () => {
+        if (!donationPool || !supabase || redeemDonationAmount < 1) return;
+
+        const newCount = donationPool.redeemed_count + redeemDonationAmount;
+        if (newCount > donationPool.quantity) {
+            alert("Not enough donation tickets available.");
+            return;
+        }
+
+        const { error } = await supabase
+            .from('tickets')
+            .update({ redeemed_count: newCount })
+            .eq('id', donationPool.id);
+
+        if (!error) {
+            fetchDonationPool();
+            setRedeemDonationAmount(1);
+            alert(`Redeemed ${redeemDonationAmount} donation ticket(s).`);
+        }
+    };
+
     useEffect(() => {
         const savedAuth = sessionStorage.getItem('staff_auth');
         if (savedAuth === 'true') {
             setIsAuth(true);
         }
     }, []);
+
+    // 3. Update useEffect to fetch the pool on load
+    useEffect(() => {
+        if (isAuth) {
+            fetchDonationPool();
+        }
+    }, [isAuth]);
+
 
     useEffect(() => {
         if (cameraActive && !ticketId && isAuth) {
@@ -143,6 +192,51 @@ function ScannerContent() {
                             Clear Scan
                         </button>
                     )}
+                </div>
+
+                <div className="mt-12 pt-8 border-t border-zinc-800">
+                    <div className="bg-zinc-900 border border-amber-900/30 rounded-lg p-5">
+                        <div className="flex justify-between items-center mb-4">
+                            <div>
+                                <h3 className="text-amber-600 font-serif uppercase text-xs tracking-widest">Community Chest</h3>
+                                <p className="text-xl font-bold">
+                                    {donationPool
+                                        ? (donationPool.quantity - donationPool.redeemed_count)
+                                        : 0} Available
+                                </p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-[10px] text-zinc-500 uppercase tracking-tighter">Total Contributed</p>
+                                <p className="text-sm font-mono text-zinc-400">{donationPool?.quantity || 0}</p>
+                            </div>
+                        </div>
+
+                        {donationPool && (donationPool.quantity > donationPool.redeemed_count) ? (
+                            <div className="flex gap-2">
+                                <div className="flex items-center bg-black border border-zinc-800 rounded px-2">
+                                    <button
+                                        onClick={() => setRedeemDonationAmount(Math.max(1, redeemDonationAmount - 1))}
+                                        className="px-3 py-1 text-amber-700"
+                                    >-</button>
+                                    <span className="w-8 text-center font-mono font-bold text-sm">{redeemDonationAmount}</span>
+                                    <button
+                                        onClick={() => setRedeemDonationAmount(Math.min(donationPool.quantity - donationPool.redeemed_count, redeemDonationAmount + 1))}
+                                        className="px-3 py-1 text-amber-700"
+                                    >+</button>
+                                </div>
+                                <button
+                                    onClick={consumeDonation}
+                                    className="flex-1 bg-amber-900/20 border border-amber-700 text-amber-500 py-2 rounded text-xs font-bold uppercase tracking-widest hover:bg-amber-900/40 transition-colors"
+                                >
+                                    Use Donation
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="text-center py-2 text-zinc-600 text-[10px] uppercase italic border border-dashed border-zinc-800 rounded">
+                                Donation pool empty
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {!ticketId ? (

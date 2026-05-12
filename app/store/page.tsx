@@ -115,26 +115,34 @@ export default function StorePage() {
                         </h3>
                         <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-zinc-800"></div>
                     </div>
-
                     {/* Product Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {groupedProducts[category].map((item) => (
+                        {groupedProducts[category].sort((a, b) => {
+                            // Force "LARP Ticket" to the front regardless of alphabet
+                            if (a.name.toLowerCase().includes('larp ticket')) return -1;
+                            if (b.name.toLowerCase().includes('larp ticket')) return 1;
+                            // Default to alphabetical for everything else
+                            return a.name.localeCompare(b.name);
+                        }).map((item) => (
                             <button
                                 key={item.priceId}
                                 onClick={() => setSelectedProduct(item)}
                                 className="group relative aspect-square bg-zinc-900/30 border border-zinc-800 hover:border-red-700 transition-all duration-500 flex flex-col items-center justify-center overflow-hidden cursor-pointer w-full"
                             >
                                 <div className="relative z-10 flex flex-col items-center text-center p-6">
-                                    <div className="relative w-full h-48 mb-4 overflow-hidden rounded">
+                                    <div className="relative w-full h-48 mb-4 flex justify-center items-center">
                                         {item.image ? (
-                                            <img
-                                                src={item.image}
-                                                alt={item.name}
-                                                className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 scale-100 group-hover:scale-110"
-                                            />
+                                            <div className="w-full h-full overflow-hidden rounded">
+                                                <img
+                                                    src={item.image}
+                                                    alt={item.name}
+                                                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 scale-100 group-hover:scale-110"
+                                                />
+                                            </div>
                                         ) : (
-                                            <div className="w-full h-full flex items-center justify-center bg-zinc-800 text-5xl grayscale group-hover:grayscale-0 transition-all">
-                                                {item.icon}
+                                            /* For icons, we apply the rounded corners directly to the narrow rectangle */
+                                            <div className="h-full aspect-[3/4] flex items-center justify-center bg-zinc-800 text-5xl rounded grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110">
+                                                <span className="leading-none">{item.icon}</span>
                                             </div>
                                         )}
                                     </div>

@@ -28,6 +28,7 @@ export async function getActiveProducts() {
       // Sort prices from lowest to highest
       .sort((a, b) => a.unit_amount - b.unit_amount);
 
+
     return {
       productId: product.id,
       name: product.name,
@@ -36,7 +37,7 @@ export async function getActiveProducts() {
       price: productPrices[0]?.unit_amount || 0, 
       variants: productPrices,
       image: product.images[0] || null,
-      icon: product.metadata.icon || '🩸',
+      icon: product.metadata.icon || (product.name.toLowerCase().includes(`donation`) ? '❤️' : '🩸'),
       category: product.metadata.category || 'Other',
       description: product.description,
     };

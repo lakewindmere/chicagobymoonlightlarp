@@ -41,23 +41,63 @@ export async function POST(req: Request) {
             item.description?.toLowerCase().includes('ticket')
         );
 
+
         const totalTicketsPurchased = ticketItems.reduce((acc, item) => acc + (item.quantity || 0), 0);
         const hasTickets = totalTicketsPurchased > 0;
 
-        // 3. Update Supabase with the new quantity-based system
+
         if (hasTickets) {
-            const { error: dbError } = await supabase
-                .from('tickets')
-                .insert([{
+            // 3a. Separate Donation items from Regular items
+            const donationItem = ticketItems.find(item =>
+                item.description?.toLowerCase().includes('donation ticket')
+            );
+
+            const regularItems = ticketItems.filter(item =>
+                !item.description?.toLowerCase().includes('donation ticket')
+            );
+
+            // 3b. Handle Donation Ticket Increment
+            if (donationItem) {
+                const purchasedDonationQty = donationItem.quantity || 0;
+
+                // Fetch the current total for 'Donation Ticket'
+                const { data: existingDonation } = await supabase
+                    .from('tickets')
+                    .select('id, quantity')
+                    .eq('ticket_type', 'Donation Ticket')
+                    .maybeSingle(); // Returns null if not found instead of throwing an error
+
+                if (existingDonation) {
+                    // Update existing record
+                    await supabase
+                        .from('tickets')
+                        .update({ quantity: existingDonation.quantity + purchasedDonationQty })
+                        .eq('id', existingDonation.id);
+                } else {
+                    // Create the first donation record if it doesn't exist
+                    await supabase.from('tickets').insert([{
+                        stripe_session_id: session.id,
+                        user_email: 'contact@chicago-in-moonlight.com',
+                        ticket_type: 'Donation Ticket',
+                        quantity: purchasedDonationQty,
+                        redeemed_count: 0,
+                        event_month: new Date().toLocaleString('default', { month: 'long', year: 'numeric' })
+                    }]);
+                }
+            }
+
+            // 3c. Handle Regular Tickets (Standard Logic)
+            if (regularItems.length > 0) {
+                const regularQty = regularItems.reduce((acc, item) => acc + (item.quantity || 0), 0);
+                await supabase.from('tickets').insert([{
                     stripe_session_id: session.id,
                     user_email: session.customer_details?.email,
-                    ticket_type: ticketItems[0]?.description || 'General Admission',
-                    quantity: totalTicketsPurchased,
-                    redeemed_count: 0, // New logic: start at zero
+                    ticket_type: regularItems[0]?.description || 'General Admission',
+                    quantity: regularQty,
+                    redeemed_count: 0,
                     event_month: new Date().toLocaleString('default', { month: 'long', year: 'numeric' })
                 }]);
-
-            if (dbError) console.error('Supabase Insert Error:', dbError);
+            }
         }
 
         // 4. Send Confirmation Email via Resend
