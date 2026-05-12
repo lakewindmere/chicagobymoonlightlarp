@@ -30,7 +30,7 @@ export default function CharacterCreator() {
         <Suspense fallback={
             <div className="min-h-screen bg-black flex items-center justify-center">
                 <p className={`${cinzel.className} text-red-700 tracking-[0.3em] animate-pulse`}>
-                    Initializing Dossier Protocol...
+                    Loading Form...
                 </p>
             </div>
         }>
@@ -151,6 +151,45 @@ function CharacterCreatorContent() {
 
     const [loadStatus, setLoadStatus] = useState<'idle' | 'success'>('idle');
     const [saveStatus, setSaveStatus] = useState<'idle' | 'success'>('idle');
+
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [searchEmail, setSearchEmail] = useState('');
+    const [searchName, setSearchName] = useState('');
+    const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+
+    const handleCloudLoad = async () => {
+        if (!searchEmail || !searchName) return;
+        setIsSearching(true);
+
+        const { data, error } = await supabase
+            .from('character_registry')
+            .select('*')
+            .eq('player_email', searchEmail)
+            .ilike('character_name', `%${searchName}%`);
+
+        if (data) setSearchResults(data);
+        if (error) console.error(error);
+        setIsSearching(false);
+    };
+
+    const applyCharacterData = (savedState: any) => {
+        if (savedState.uid) setUniqueId(savedState.uid);
+        if (savedState.id) setIdentity(savedState.id);
+        if (savedState.ooc) setOocData(savedState.ooc);
+        if (savedState.at) setAttrs(savedState.at);
+        if (savedState.bp) setBloodPotency(savedState.bp);
+        if (savedState.sk) setSkills(savedState.sk);
+        if (savedState.ds) setDisciplineSlots(savedState.ds);
+        if (savedState.me) setMerits(savedState.me);
+        if (savedState.fl) setFlaws(savedState.fl);
+        if (savedState.bg) setBackgrounds(savedState.bg);
+        if (savedState.ad) setAdvantages(savedState.ad);
+        if (savedState.xp) setXp(savedState.xp);
+
+        setIsSearchOpen(false);
+        setSearchResults([]);
+    };
 
     const loadCharacterFromFile = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -359,14 +398,14 @@ function CharacterCreatorContent() {
     if (isFinalized) {
         return (
             <main className="min-h-screen bg-black text-zinc-400 p-4 md:p-12 flex flex-col items-center justify-center">
-                
+
                 <div className="max-w-md w-full bg-zinc-950 border border-red-900/50 p-8 rounded-sm shadow-[0_0_50px_rgba(153,27,27,0.2)] text-center">
 
                     {/* Header */}
-                    <h1 className={`${cinzel.className} text-3xl font-black uppercase tracking-[0.2em] text-red-700 mb-2`}>
-                        Dossier <span className="text-zinc-100 font-light">Compiled</span>
+                    <h1 className={`${cinzel.className} text-3xl font-black tracking-[0.2em] text-red-700 mb-2`}>
+                        Character <span className="text-zinc-100 font-light">Submitted</span>
                     </h1>
-                    <p className="text-[10px] uppercase tracking-widest text-zinc-600 mb-8 border-b border-zinc-900 pb-4">
+                    <p className="text-[10px] tracking-widest text-zinc-600 mb-8 border-b border-zinc-900 pb-4">
                         Chicago Registry // {oocData.playerName || "Unknown Subject"}
                     </p>
 
@@ -386,7 +425,7 @@ function CharacterCreatorContent() {
 
                     <div className="space-y-4">
                         <p className={`${cinzel.className} text-[11px] text-zinc-500 leading-relaxed tracking-widest`}>
-                            Your dossier has been saved. It can be retrieved later for submitting your Down Time Actions and referencing In-Game.
+                            Your character has been saved. It can be retrieved later for submitting your Down Time Actions and referencing In-Game from this page.
                         </p>
 
                         <div className="text-center pt-6 flex flex-col gap-3">
@@ -403,7 +442,7 @@ function CharacterCreatorContent() {
                     </div>
                 </div>
 
-                <p className="mt-8 text-[9px] text-zinc-800 uppercase tracking-widest">
+                <p className="mt-8 text-[9px] text-zinc-800 tracking-widest">
                     Registry ID: {btoa(oocData.playerEmail || "anon").substring(0, 8)}
                 </p>
             </main>
@@ -412,44 +451,76 @@ function CharacterCreatorContent() {
 
     return (
         <main className="min-h-screen bg-black text-zinc-400 p-4 md:p-12">
+            {isSearchOpen && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 p-6 backdrop-blur-md">
+                    <div className="w-full max-w-md bg-zinc-950 border border-red-900 p-8 shadow-[0_0_50px_rgba(185,28,28,0.3)]">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className={`${cinzel.className} text-xl text-red-700 uppercase tracking-widest`}>Retrieve Dossier</h2>
+                            <button onClick={() => setIsSearchOpen(false)} className="text-zinc-500 hover:text-white">✕</button>
+                        </div>
+
+                        <div className="space-y-4">
+                            <input
+                                placeholder="PLAYER EMAIL"
+                                className="w-full bg-black border border-zinc-800 p-3 text-red-700 font-mono focus:outline-none focus:border-red-700"
+                                onChange={(e) => setSearchEmail(e.target.value)}
+                            />
+                            <input
+                                placeholder="CHARACTER NAME"
+                                className="w-full bg-black border border-zinc-800 p-3 text-red-700 font-mono focus:outline-none focus:border-red-700"
+                                onChange={(e) => setSearchName(e.target.value)}
+                            />
+                            <button
+                                onClick={handleCloudLoad}
+                                className="w-full py-3 bg-red-900/10 border border-red-700/50 text-red-700 uppercase tracking-widest hover:bg-red-700 hover:text-black transition-all"
+                            >
+                                {isSearching ? 'Accessing Registry...' : 'Search Cloud'}
+                            </button>
+                        </div>
+
+                        {searchResults.length > 0 && (
+                            <div className="mt-6 border-t border-zinc-900 pt-4 max-h-40 overflow-y-auto">
+                                <p className="text-[10px] text-zinc-600 uppercase mb-2">Results found:</p>
+                                {searchResults.map(res => (
+                                    <button
+                                        key={res.id}
+                                        onClick={() => applyCharacterData(res.character_data)}
+                                        className="w-full text-left p-3 border border-zinc-900 hover:border-red-900 mb-2 text-xs uppercase tracking-widest transition-colors"
+                                    >
+                                        {res.character_name}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
             <div className="max-w-5xl mx-auto">
 
                 {/* Main Page Header */}
                 <header className="mb-10 border-b border-red-900/30 pb-6">
-                    <h1 className={`${cinzel.className} text-4xl md:text-5xl font-black uppercase tracking-[0.2em] text-red-700 leading-none`}>
-                        The <span className="text-zinc-100">Dossier</span>
+                    <h1 className={`${cinzel.className} text-4xl md:text-5xl font-black tracking-[0.2em] text-red-700 leading-none`}>
+                        Character <span className="text-zinc-100">Creation</span>
                     </h1>
-                    <p className="mt-2 text-zinc-600 italic tracking-[0.2em] uppercase text-[10px]">
-                        Chicago Camarilla Census Record // Identity & Blood
+                    <p className="mt-2 text-zinc-600 italic tracking-[0.2em] text-[10px]">
+                        Identity & Blood
                     </p>
 
                     <div className="flex flex-col items-end">
                         <div className="flex gap-2">
-                            {/* Hidden File Input */}
-                            <input
-                                type="file"
-                                id="file-load"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={loadCharacterFromFile}
-                            />
-
-                            {/* Load Button */}
                             <button
                                 type="button"
-                                onClick={() => document.getElementById('file-load')?.click()}
-                                className={`uppercase tracking-[0.3em] text-[9px] transition-all duration-300 py-1 px-3 border flex items-center gap-2 ${loadStatus === 'success'
-                                    ? 'bg-green-950/20 border-green-500 text-green-500 shadow-[0_0_10px_rgba(34,197,94,0.2)]'
-                                    : 'text-zinc-500 border-zinc-900 hover:border-zinc-700 bg-zinc-950/50'
-                                    }`}
+                                onClick={() => setIsSearchOpen(true)}
+                                className="text-zinc-500 border border-zinc-900 hover:border-zinc-700 bg-zinc-950/50 uppercase tracking-[0.3em] text-[9px] py-1 px-3 transition-all"
                             >
-                                {loadStatus === 'success' ? '● Loaded' : 'Load Dossier'}
+                                Retrieve from Cloud
                             </button>
 
                             <button
                                 type="button"
                                 onClick={handleReset}
-                                className="text-zinc-500 hover:text-red-700 uppercase tracking-[0.3em] text-[9px] transition-colors duration-300 py-1 px-3 border border-zinc-900 hover:border-red-900/50 bg-zinc-950/50"
+                                className="text-zinc-500 hover:text-red-700 uppercase tracking-[0.3em] text-[9px] py-1 px-3 border border-zinc-900 hover:border-red-900/50 bg-zinc-950/50"
                             >
                                 Reset Form
                             </button>
@@ -470,14 +541,13 @@ function CharacterCreatorContent() {
 
                 <form className="space-y-12">
                     <section className="bg-zinc-900/10 border border-zinc-800/40 p-4 md:p-6 rounded-sm mb-12 relative overflow-hidden">
-                        {/* Subtle background label for OOC */}
                         <div className="absolute top-2 right-4 pointer-events-none opacity-5">
-                            <span className={`${cinzel.className} text-4xl font-black uppercase tracking-tighter text-zinc-500`}>OOC</span>
+                            <span className={`text-4xl font-black text-zinc-500`}>OOC</span>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
                             <div className="group flex flex-col">
-                                <label className="text-[9px] uppercase tracking-[0.3em] text-zinc-500 group-focus-within:text-zinc-200 transition-colors mb-2 italic">
+                                <label className="text-[10px] tracking-[0.3em] text-zinc-500 group-focus-within:text-red-700 transition-colors mb-2">
                                     Player Name (Out of Character)
                                 </label>
                                 <input
@@ -485,21 +555,21 @@ function CharacterCreatorContent() {
                                     placeholder="Your Full Name"
                                     value={oocData.playerName}
                                     onChange={(e) => setOocData({ ...oocData, playerName: e.target.value })}
-                                    className="bg-transparent border-b border-zinc-800 text-zinc-200 text-sm py-1 focus:outline-none focus:border-zinc-400 transition-colors placeholder:text-zinc-900"
+                                    className="bg-transparent border-b border-zinc-800 text-zinc-200 text-sm py-1 focus:outline-none focus:border-red-700 transition-colors placeholder:text-zinc-900"
                                     required
                                 />
                             </div>
 
                             <div className="group flex flex-col">
-                                <label className="text-[9px] uppercase tracking-[0.3em] text-zinc-500 group-focus-within:text-zinc-200 transition-colors mb-2 italic">
-                                    Registry Email (Links to Tickets)
+                                <label className="text-[10px] tracking-[0.3em] text-zinc-500 group-focus-within:text-red-700 transition-colors mb-2">
+                                    Player Email (Links to Tickets)
                                 </label>
                                 <input
                                     type="email"
                                     placeholder="email@example.com"
                                     value={oocData.playerEmail}
                                     onChange={(e) => setOocData({ ...oocData, playerEmail: e.target.value })}
-                                    className="bg-transparent border-b border-zinc-800 text-zinc-200 text-sm py-1 focus:outline-none focus:border-zinc-400 transition-colors placeholder:text-zinc-900"
+                                    className="bg-transparent border-b border-zinc-800 text-zinc-200 text-sm py-1 focus:outline-none focus:border-red-700 transition-colors placeholder:text-zinc-900"
                                     required
                                 />
                             </div>
@@ -510,7 +580,7 @@ function CharacterCreatorContent() {
 
                             {/* Full Name */}
                             <div className="md:col-span-2 group">
-                                <label className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 group-focus-within:text-red-700 transition-colors">Character Name</label>
+                                <label className="text-[10px] tracking-[0.3em] text-zinc-600 group-focus-within:text-red-700 transition-colors">Character Name</label>
                                 <input
                                     type="text"
                                     value={identity.name}
@@ -521,7 +591,7 @@ function CharacterCreatorContent() {
 
                             {/* Clan Selection */}
                             <div className="group">
-                                <label className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 group-focus-within:text-red-700 transition-colors">Clan</label>
+                                <label className="text-[10px] tracking-[0.3em] text-zinc-600 group-focus-within:text-red-700 transition-colors">Clan</label>
                                 <input
                                     type="text"
                                     value={identity.clan}
@@ -532,7 +602,7 @@ function CharacterCreatorContent() {
 
                             {/* Generation */}
                             <div className="group">
-                                <label className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 group-focus-within:text-red-700 transition-colors">Generation</label>
+                                <label className="text-[10px] tracking-[0.3em] text-zinc-600 group-focus-within:text-red-700 transition-colors">Generation</label>
                                 <input
                                     type="text"
                                     value={identity.generation}
@@ -543,7 +613,7 @@ function CharacterCreatorContent() {
 
                             {/* Predator Type */}
                             <div className="md:col-span-2 group">
-                                <label className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 group-focus-within:text-red-700 transition-colors">Predator Type</label>
+                                <label className="text-[10px] tracking-[0.3em] text-zinc-600 group-focus-within:text-red-700 transition-colors">Predator Type</label>
                                 <input
                                     type="text"
                                     value={identity.predatorType}
@@ -554,7 +624,7 @@ function CharacterCreatorContent() {
 
                             {/* Hunting Pool */}
                             <div className="md:col-span-2 group">
-                                <label className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 group-focus-within:text-red-700 transition-colors">Hunting Pool</label>
+                                <label className="text-[10px] tracking-[0.3em] text-zinc-600 group-focus-within:text-red-700 transition-colors">Hunting Pool</label>
                                 <input
                                     type="text"
                                     value={identity.huntingPool}
@@ -565,7 +635,7 @@ function CharacterCreatorContent() {
 
                             {/* Clan Bane */}
                             <div className="md:col-span-2 group">
-                                <label className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 group-focus-within:text-red-700 transition-colors">Clan Bane</label>
+                                <label className="text-[10px] tracking-[0.3em] text-zinc-600 group-focus-within:text-red-700 transition-colors">Clan Bane</label>
                                 <input
                                     type="text"
                                     value={identity.clanBane}
@@ -576,7 +646,7 @@ function CharacterCreatorContent() {
 
                             {/* Bane Severity (Dots) */}
                             <div className="group flex flex-col justify-end">
-                                <label className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 mb-2">Bane Severity</label>
+                                <label className="text-[10px] tracking-[0.3em] text-zinc-600 mb-2">Bane Severity</label>
                                 <AttributeDots
                                     value={identity.baneSeverity}
                                     onChange={(val) => updateIdentity('baneSeverity', val)}
@@ -586,7 +656,7 @@ function CharacterCreatorContent() {
 
                             {/* Compulsion */}
                             <div className="md:col-span-4 group">
-                                <label className="text-[10px] uppercase tracking-[0.3em] text-zinc-600 group-focus-within:text-red-700 transition-colors">Compulsion</label>
+                                <label className="text-[10px] tracking-[0.3em] text-zinc-600 group-focus-within:text-red-700 transition-colors">Compulsion</label>
                                 <input
                                     type="text"
                                     value={identity.compulsion}
@@ -599,7 +669,7 @@ function CharacterCreatorContent() {
                     </section>
                     <section className="bg-zinc-950/20 border border-zinc-900 p-4 md:p-8 rounded-sm shadow-2xl mt-12">
                         <div className="mb-8">
-                            <h2 className={`${cinzel.className} text-lg md:text-xl font-bold uppercase tracking-[0.2em] text-red-700 flex items-center`}>
+                            <h2 className={`${cinzel.className} text-lg md:text-xl font-bold tracking-[0.2em] text-red-700 flex items-center`}>
                                 <span className="w-8 h-[1px] bg-red-700 mr-4"></span>
                                 Attributes
                             </h2>
@@ -608,9 +678,9 @@ function CharacterCreatorContent() {
 
                             {/* Health (Calculated)  */}
                             <div className="flex flex-col space-y-2">
-                                <label className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 italic">Health (Stamina + 3)</label>
+                                <label className="text-[10px] tracking-[0.3em] text-zinc-500 italic">Health (Stamina + 3)</label>
                                 <div className="flex items-center space-x-3">
-                                    <span className="text-2xl font-mono font-bold text-zinc-100 drop-shadow-[0_0_10px_rgba(185,28,28,0.4)]">
+                                    <span className="text-2xl font-bold text-zinc-100 drop-shadow-[0_0_10px_rgba(185,28,28,0.4)]">
                                         {healthMax}
                                     </span>
                                     <div className="flex space-x-1 opacity-50">
@@ -623,9 +693,9 @@ function CharacterCreatorContent() {
 
                             {/* Willpower (Calculated) [cite: 73] */}
                             <div className="flex flex-col space-y-2">
-                                <label className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 italic">Willpower (Res + Com)</label>
+                                <label className="text-[10px] tracking-[0.3em] text-zinc-500 italic">Willpower (Resolve + Composure)</label>
                                 <div className="flex items-center space-x-3">
-                                    <span className="text-2xl font-mono font-bold text-zinc-100 drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
+                                    <span className="text-2xl font-bold text-zinc-100 drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
                                         {willpowerMax}
                                     </span>
                                     <div className="flex space-x-1 opacity-50">
@@ -638,14 +708,14 @@ function CharacterCreatorContent() {
 
                             {/* Humanity (Editable)  */}
                             <div className="flex flex-col space-y-2">
-                                <label className="text-[10px] uppercase tracking-[0.3em] text-zinc-500">Humanity</label>
+                                <label className="text-[10px] tracking-[0.3em] text-zinc-500">Humanity</label>
                                 <div className="flex items-center justify-between bg-black/40 p-2 rounded border border-zinc-900">
                                     <AttributeDots
                                         value={humanity}
                                         onChange={(val) => setHumanity(val)}
                                         max={10}
                                     />
-                                    <span className="text-xs font-mono text-zinc-500 ml-4">{humanity}/10</span>
+                                    <span className="text-xs text-zinc-500 ml-4">{humanity}/10</span>
                                 </div>
                             </div>
                         </div>
@@ -653,14 +723,14 @@ function CharacterCreatorContent() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
                             {/* Physical Section [cite: 17] */}
                             <div className="space-y-4">
-                                <h3 className={`${cinzel.className} text-[10px] text-zinc-500 tracking-[0.3em] uppercase border-b border-zinc-900 pb-2 mb-4`}>Physical</h3>
+                                <h3 className={`${cinzel.className} text-[10px] text-zinc-500 tracking-[0.3em] border-b border-zinc-900 pb-2 mb-4`}>Physical</h3>
                                 {[
                                     { id: 'strength', label: 'Strength' },
                                     { id: 'dexterity', label: 'Dexterity' },
                                     { id: 'stamina', label: 'Stamina' }
                                 ].map(attr => (
                                     <div key={attr.id} className="flex justify-between items-center group">
-                                        <label className="text-xs uppercase tracking-widest text-zinc-400 group-hover:text-zinc-100 transition-colors">{attr.label}</label>
+                                        <label className="text-xs tracking-widest text-zinc-400 group-hover:text-zinc-100 transition-colors">{attr.label}</label>
                                         <AttributeDots value={attrs[attr.id as keyof typeof attrs]} onChange={(val) => updateAttr(attr.id, val)} />
                                     </div>
                                 ))}
@@ -668,14 +738,14 @@ function CharacterCreatorContent() {
 
                             {/* Social Section [cite: 19] */}
                             <div className="space-y-4">
-                                <h3 className={`${cinzel.className} text-[10px] text-zinc-500 tracking-[0.3em] uppercase border-b border-zinc-900 pb-2 mb-4`}>Social</h3>
+                                <h3 className={`${cinzel.className} text-[10px] text-zinc-500 tracking-[0.3em] border-b border-zinc-900 pb-2 mb-4`}>Social</h3>
                                 {[
                                     { id: 'charisma', label: 'Charisma' },
                                     { id: 'manipulation', label: 'Manipulation' },
                                     { id: 'composure', label: 'Composure' }
                                 ].map(attr => (
                                     <div key={attr.id} className="flex justify-between items-center group">
-                                        <label className="text-xs uppercase tracking-widest text-zinc-400 group-hover:text-zinc-100 transition-colors">{attr.label}</label>
+                                        <label className="text-xs tracking-widest text-zinc-400 group-hover:text-zinc-100 transition-colors">{attr.label}</label>
                                         <AttributeDots value={attrs[attr.id as keyof typeof attrs]} onChange={(val) => updateAttr(attr.id, val)} />
                                     </div>
                                 ))}
@@ -683,14 +753,14 @@ function CharacterCreatorContent() {
 
                             {/* Mental Section [cite: 20] */}
                             <div className="space-y-4">
-                                <h3 className={`${cinzel.className} text-[10px] text-zinc-500 tracking-[0.3em] uppercase border-b border-zinc-900 pb-2 mb-4`}>Mental</h3>
+                                <h3 className={`${cinzel.className} text-[10px] text-zinc-500 tracking-[0.3em] border-b border-zinc-900 pb-2 mb-4`}>Mental</h3>
                                 {[
                                     { id: 'intelligence', label: 'Intelligence' },
                                     { id: 'wits', label: 'Wits' },
                                     { id: 'resolve', label: 'Resolve' }
                                 ].map(attr => (
                                     <div key={attr.id} className="flex justify-between items-center group">
-                                        <label className="text-xs uppercase tracking-widest text-zinc-400 group-hover:text-zinc-100 transition-colors">{attr.label}</label>
+                                        <label className="text-xs tracking-widest text-zinc-400 group-hover:text-zinc-100 transition-colors">{attr.label}</label>
                                         <AttributeDots value={attrs[attr.id as keyof typeof attrs]} onChange={(val) => updateAttr(attr.id, val)} />
                                     </div>
                                 ))}
@@ -699,7 +769,7 @@ function CharacterCreatorContent() {
                     </section>
                     <section className="bg-zinc-950/20 border border-zinc-900 p-4 md:p-8 rounded-sm shadow-2xl mt-12">
                         <div className="col-span-12 mb-8">
-                            <h2 className={`${cinzel.className} text-lg md:text-xl font-bold uppercase tracking-[0.2em] text-red-700 flex items-center`}>
+                            <h2 className={`${cinzel.className} text-lg md:text-xl font-bold tracking-[0.2em] text-red-700 flex items-center`}>
                                 <span className="w-8 h-[1px] bg-red-700 mr-4"></span>
                                 Skills
                             </h2>
@@ -709,16 +779,16 @@ function CharacterCreatorContent() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
                             {/* Physical Skills [cite: 17, 21] */}
                             <div className="space-y-3">
-                                <h3 className="text-[10px] text-zinc-500 tracking-[0.3em] uppercase border-b border-zinc-900 pb-2 mb-4">Physical</h3>
+                                <h3 className="text-[10px] text-zinc-500 tracking-[0.3em] border-b border-zinc-900 pb-2 mb-4">Physical</h3>
                                 {[
                                     { id: 'athletics', label: 'Athletics' }, { id: 'brawl', label: 'Brawl' },
                                     { id: 'crafts', label: 'Crafts' }, { id: 'drive', label: 'Drive' },
-                                    { id: 'firearms', label: 'Firearms' }, { id: 'Larceny', label: 'Larceny' },
+                                    { id: 'markmanship', label: 'Marksmanship' }, { id: 'Larceny', label: 'Larceny' },
                                     { id: 'melee', label: 'Melee' }, { id: 'stealth', label: 'Stealth' },
                                     { id: 'survival', label: 'Survival' }
                                 ].map(skill => (
                                     <div key={skill.id} className="flex justify-between items-center group">
-                                        <label className="text-[11px] uppercase tracking-widest text-zinc-400 group-hover:text-zinc-100 transition-colors">{skill.label}</label>
+                                        <label className="text-[11px] tracking-widest text-zinc-400 group-hover:text-zinc-100 transition-colors">{skill.label}</label>
                                         <AttributeDots value={skills[skill.id as keyof typeof skills]} onChange={(val) => updateSkill(skill.id, val)} />
                                     </div>
                                 ))}
@@ -726,7 +796,7 @@ function CharacterCreatorContent() {
 
                             {/* Social Skills [cite: 19, 21] */}
                             <div className="space-y-3">
-                                <h3 className="text-[10px] text-zinc-500 tracking-[0.3em] uppercase border-b border-zinc-900 pb-2 mb-4">Social</h3>
+                                <h3 className="text-[10px] text-zinc-500 tracking-[0.3em] border-b border-zinc-900 pb-2 mb-4">Social</h3>
                                 {[
                                     { id: 'animalKen', label: 'Animal Ken' }, { id: 'etiquette', label: 'Etiquette' },
                                     { id: 'insight', label: 'Insight' }, { id: 'intimidation', label: 'Intimidation' },
@@ -735,7 +805,7 @@ function CharacterCreatorContent() {
                                     { id: 'subterfuge', label: 'Subterfuge' }
                                 ].map(skill => (
                                     <div key={skill.id} className="flex justify-between items-center group">
-                                        <label className="text-[11px] uppercase tracking-widest text-zinc-400 group-hover:text-zinc-100 transition-colors">{skill.label}</label>
+                                        <label className="text-[11px] tracking-widest text-zinc-400 group-hover:text-zinc-100 transition-colors">{skill.label}</label>
                                         <AttributeDots value={skills[skill.id as keyof typeof skills]} onChange={(val) => updateSkill(skill.id, val)} />
                                     </div>
                                 ))}
@@ -743,7 +813,7 @@ function CharacterCreatorContent() {
 
                             {/* Mental Skills [cite: 20, 21] */}
                             <div className="space-y-3">
-                                <h3 className="text-[10px] text-zinc-500 tracking-[0.3em] uppercase border-b border-zinc-900 pb-2 mb-4">Mental</h3>
+                                <h3 className="text-[10px] text-zinc-500 tracking-[0.3em] border-b border-zinc-900 pb-2 mb-4">Mental</h3>
                                 {[
                                     { id: 'academics', label: 'Academics' }, { id: 'awareness', label: 'Awareness' },
                                     { id: 'finance', label: 'Finance' }, { id: 'investigation', label: 'Investigation' },
@@ -752,7 +822,7 @@ function CharacterCreatorContent() {
                                     { id: 'technology', label: 'Technology' }
                                 ].map(skill => (
                                     <div key={skill.id} className="flex justify-between items-center group">
-                                        <label className="text-[11px] uppercase tracking-widest text-zinc-400 group-hover:text-zinc-100 transition-colors">{skill.label}</label>
+                                        <label className="text-[11px] tracking-widest text-zinc-400 group-hover:text-zinc-100 transition-colors">{skill.label}</label>
                                         <AttributeDots value={skills[skill.id as keyof typeof skills]} onChange={(val) => updateSkill(skill.id, val)} />
                                     </div>
                                 ))}
@@ -761,7 +831,7 @@ function CharacterCreatorContent() {
                     </section>
                     <section className="bg-zinc-950/20 border border-zinc-900 p-4 md:p-8 rounded-sm shadow-2xl mt-12">
                         <div className="col-span-12 mb-8">
-                            <h2 className={`${cinzel.className} text-lg md:text-xl font-bold uppercase tracking-[0.2em] text-red-700 flex items-center`}>
+                            <h2 className={`${cinzel.className} text-lg md:text-xl font-bold tracking-[0.2em] text-red-700 flex items-center`}>
                                 <span className="w-8 h-[1px] bg-red-700 mr-4"></span>
                                 Disciplines
                             </h2>
@@ -784,7 +854,7 @@ function CharacterCreatorContent() {
                                         {/* Header: Dropdown + Dots */}
                                         <div className="space-y-3">
                                             <div className="flex justify-between items-center">
-                                                <label className="text-[9px] uppercase tracking-[0.3em] text-zinc-600">
+                                                <label className="text-[9px] tracking-[0.3em] text-zinc-600">
                                                     Discipline Type
                                                 </label>
                                                 <AttributeDots
@@ -797,7 +867,7 @@ function CharacterCreatorContent() {
                                                 value={slot.type}
                                                 disabled={isSlotLocked}
                                                 onChange={(e) => updateDisciplineType(slotIdx, e.target.value)}
-                                                className="w-full bg-transparent border-b border-zinc-800 text-zinc-100 text-xs py-1 focus:outline-none focus:border-red-700 transition-colors appearance-none cursor-pointer uppercase tracking-widest"
+                                                className="w-full bg-transparent border-b border-zinc-800 text-zinc-100 text-xs py-1 focus:outline-none focus:border-red-700 transition-colors appearance-none cursor-pointer tracking-widest"
                                             >
                                                 <option className="bg-zinc-950" value="">Unknown / None</option>
                                                 {disciplineOptions.map(opt => (
@@ -819,7 +889,7 @@ function CharacterCreatorContent() {
                                                         className={`group flex flex-col transition-opacity duration-300 ${isPowerDisabled ? 'opacity-20 grayscale' : 'opacity-100'
                                                             }`}
                                                     >
-                                                        <label className={`text-[8px] uppercase tracking-widest mb-1 transition-colors ${isPowerDisabled ? 'text-zinc-800' : 'text-zinc-600 group-focus-within:text-red-700'
+                                                        <label className={`text-[8px] tracking-widest mb-1 transition-colors ${isPowerDisabled ? 'text-zinc-800' : 'text-zinc-600 group-focus-within:text-red-700'
                                                             }`}>
                                                             Level {lvlIdx + 1} Power
                                                         </label>
@@ -843,7 +913,7 @@ function CharacterCreatorContent() {
                     <section className="bg-zinc-950/20 border border-zinc-900 p-4 md:p-8 rounded-sm shadow-2xl mt-12">
                         {/* Section Header */}
                         <div className="col-span-12 mb-8">
-                            <h2 className={`${cinzel.className} text-lg md:text-xl font-bold uppercase tracking-[0.2em] text-red-700 flex items-center`}>
+                            <h2 className={`${cinzel.className} text-lg md:text-xl font-bold tracking-[0.2em] text-red-700 flex items-center`}>
                                 <span className="w-8 h-[1px] bg-red-700 mr-4"></span>
                                 Backgrounds & Advantages
                             </h2>
@@ -854,7 +924,7 @@ function CharacterCreatorContent() {
 
                             {/* Left Column: Backgrounds [cite: 92] */}
                             <div className="space-y-2">
-                                <h3 className="text-[10px] text-zinc-600 tracking-[0.3em] uppercase mb-4 pl-1 italic">Backgrounds</h3>
+                                <h3 className="text-[10px] text-zinc-600 tracking-[0.3em] mb-4 pl-1 italic">Backgrounds</h3>
                                 {backgrounds.map((item, idx) => {
                                     // Waterfall logic: Enable first row or if row above has text [cite: 92]
                                     const isLocked = idx > 0 && backgrounds[idx - 1].name.trim() === "";
@@ -865,7 +935,7 @@ function CharacterCreatorContent() {
                                             className={`flex items-center space-x-4 group border-b border-zinc-900/30 pb-1 transition-all duration-500 ${isLocked ? 'opacity-10 pointer-events-none grayscale' : 'opacity-100'
                                                 }`}
                                         >
-                                            <span className="text-[9px] font-mono text-zinc-800 w-4">{idx + 1}</span>
+                                            <span className="text-[9px] text-zinc-800 w-4">{idx + 1}</span>
                                             <input
                                                 type="text"
                                                 placeholder={isLocked ? "" : "Identify Background..."}
@@ -886,7 +956,7 @@ function CharacterCreatorContent() {
 
                             {/* Right Column: Advantages / Disadvantages [cite: 93, 140, 141] */}
                             <div className="space-y-2">
-                                <h3 className="text-[10px] text-zinc-600 tracking-[0.3em] uppercase mb-4 pl-1 italic">Advantages & Disadvantages</h3>
+                                <h3 className="text-[10px] text-zinc-600 tracking-[0.3em] mb-4 pl-1 italic">Advantages & Disadvantages</h3>
                                 {advantages.map((item, idx) => {
                                     // Waterfall logic: Enable first row or if row above has text 
                                     const isLocked = idx > 0 && advantages[idx - 1].name.trim() === "";
@@ -897,7 +967,7 @@ function CharacterCreatorContent() {
                                             className={`flex items-center space-x-4 group border-b border-zinc-900/30 pb-1 transition-all duration-500 ${isLocked ? 'opacity-10 pointer-events-none grayscale' : 'opacity-100'
                                                 }`}
                                         >
-                                            <span className="text-[9px] font-mono text-zinc-800 w-4">{idx + 1}</span>
+                                            <span className="text-[9px] text-zinc-800 w-4">{idx + 1}</span>
                                             <input
                                                 type="text"
                                                 placeholder={isLocked ? "" : "Identify Advantage/Flaw..."}
@@ -921,7 +991,7 @@ function CharacterCreatorContent() {
                     <section className="bg-zinc-950/20 border border-zinc-900 p-4 md:p-8 rounded-sm shadow-2xl mt-12">
                         {/* Section Header */}
                         <div className="col-span-12 mb-8">
-                            <h2 className={`${cinzel.className} text-lg md:text-xl font-bold uppercase tracking-[0.2em] text-red-700 flex items-center`}>
+                            <h2 className={`${cinzel.className} text-lg md:text-xl font-bold tracking-[0.2em] text-red-700 flex items-center`}>
                                 <span className="w-8 h-px bg-red-700 mr-4"></span>
                                 Merits & Flaws
                             </h2>
@@ -932,7 +1002,7 @@ function CharacterCreatorContent() {
 
                             {/* Left Column: Merits */}
                             <div className="space-y-2">
-                                <h3 className="text-[10px] text-zinc-600 tracking-[0.3em] uppercase mb-4 pl-1 italic font-bold">Merits</h3>
+                                <h3 className="text-[10px] text-zinc-600 tracking-[0.3em] mb-4 pl-1 italic font-bold">Merits</h3>
                                 {merits.map((item, idx) => {
                                     const isLocked = idx > 0 && merits[idx - 1].name.trim() === "";
 
@@ -942,7 +1012,7 @@ function CharacterCreatorContent() {
                                             className={`flex items-center space-x-4 group border-b border-zinc-900/30 pb-1 transition-all duration-500 ${isLocked ? 'opacity-10 pointer-events-none grayscale' : 'opacity-100'
                                                 }`}
                                         >
-                                            <span className="text-[9px] font-mono text-zinc-800 w-4">{idx + 1}</span>
+                                            <span className="text-[9px] text-zinc-800 w-4">{idx + 1}</span>
                                             <input
                                                 type="text"
                                                 placeholder={isLocked ? "" : "Define Merit..."}
@@ -963,7 +1033,7 @@ function CharacterCreatorContent() {
 
                             {/* Right Column: Flaws */}
                             <div className="space-y-2">
-                                <h3 className="text-[10px] text-zinc-600 tracking-[0.3em] uppercase mb-4 pl-1 italic font-bold text-red-900">Flaws</h3>
+                                <h3 className="text-[10px] text-zinc-600 tracking-[0.3em] mb-4 pl-1 italic font-bold text-red-900">Flaws</h3>
                                 {flaws.map((item, idx) => {
                                     const isLocked = idx > 0 && flaws[idx - 1].name.trim() === "";
 
@@ -973,7 +1043,7 @@ function CharacterCreatorContent() {
                                             className={`flex items-center space-x-4 group border-b border-zinc-900/30 pb-1 transition-all duration-500 ${isLocked ? 'opacity-10 pointer-events-none grayscale' : 'opacity-100'
                                                 }`}
                                         >
-                                            <span className="text-[9px] font-mono text-zinc-800 w-4">{idx + 1}</span>
+                                            <span className="text-[9px] text-zinc-800 w-4">{idx + 1}</span>
                                             <input
                                                 type="text"
                                                 placeholder={isLocked ? "" : "Define Flaw..."}
@@ -1003,7 +1073,7 @@ function CharacterCreatorContent() {
                                     <span className={`${cinzel.className} -rotate-45 text-red-700 font-bold group-hover:scale-110 transition-transform`}>XP</span>
                                 </div>
                                 <div>
-                                    <h2 className={`${cinzel.className} text-lg font-bold uppercase tracking-[0.2em] text-zinc-100`}>
+                                    <h2 className={`${cinzel.className} text-lg font-bold tracking-[0.2em] text-zinc-100`}>
                                         Experience Ledger
                                     </h2>
                                 </div>
@@ -1014,30 +1084,30 @@ function CharacterCreatorContent() {
 
                                 {/* Total XP [cite: 164-166] */}
                                 <div className="flex flex-col items-center group">
-                                    <label className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 mb-2 group-focus-within:text-red-700 transition-colors">Total XP</label>
+                                    <label className="text-[10px] tracking-[0.3em] text-zinc-500 mb-2 group-focus-within:text-red-700 transition-colors">Total XP</label>
                                     <input
                                         type="number"
                                         value={xp.total}
                                         onChange={(e) => setXp({ ...xp, total: parseInt(e.target.value) || 0 })}
-                                        className="bg-transparent border-b border-zinc-800 text-zinc-100 text-2xl font-mono text-center w-20 focus:outline-none focus:border-red-700 transition-colors"
+                                        className="bg-transparent border-b border-zinc-800 text-zinc-100 text-2xl text-center w-20 focus:outline-none focus:border-red-700 transition-colors"
                                     />
                                 </div>
 
                                 {/* Spent XP [cite: 167-168] */}
                                 <div className="flex flex-col items-center group">
-                                    <label className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 mb-2 group-focus-within:text-red-700 transition-colors">Spent XP</label>
+                                    <label className="text-[10px] tracking-[0.3em] text-zinc-500 mb-2 group-focus-within:text-red-700 transition-colors">Spent XP</label>
                                     <input
                                         type="number"
                                         value={xp.spent}
                                         onChange={(e) => setXp({ ...xp, spent: parseInt(e.target.value) || 0 })}
-                                        className="bg-transparent border-b border-zinc-800 text-zinc-100 text-2xl font-mono text-center w-20 focus:outline-none focus:border-red-700 transition-colors"
+                                        className="bg-transparent border-b border-zinc-800 text-zinc-100 text-2xl text-center w-20 focus:outline-none focus:border-red-700 transition-colors"
                                     />
                                 </div>
 
                                 {/* Unspent (Calculated) */}
                                 <div className="flex flex-col items-center border-l border-zinc-900 pl-12">
-                                    <label className="text-[10px] uppercase tracking-[0.3em] text-red-900 mb-2">Available</label>
-                                    <div className="text-3xl font-mono font-black text-red-700 drop-shadow-[0_0_15px_rgba(185,28,28,0.4)]">
+                                    <label className="text-[10px] tracking-[0.3em] text-red-900 mb-2">Available</label>
+                                    <div className="text-3xl font-black text-red-700 drop-shadow-[0_0_15px_rgba(185,28,28,0.4)]">
                                         {unspentXp}
                                     </div>
                                 </div>
@@ -1051,9 +1121,9 @@ function CharacterCreatorContent() {
                         <button
                             type="button"
                             onClick={handleFinalize}
-                            className="bg-red-950/20 border border-red-700 px-8 py-2 text-red-700 uppercase tracking-[0.3em] font-bold text-sm hover:bg-red-700 hover:text-black transition-all duration-500 shadow-[0_0_20px_rgba(153,27,27,0.2)]"
+                            className="bg-red-950/20 border border-red-700 px-8 py-2 text-red-700 tracking-[0.3em] font-bold text-sm hover:bg-red-700 hover:text-black transition-all duration-500 shadow-[0_0_20px_rgba(153,27,27,0.2)]"
                         >
-                            Finalize Record
+                            Save Character
                         </button>
                     </div>
                 </form>
