@@ -37,7 +37,7 @@ export function Navbar() {
                 <div className="max-w-7xl mx-auto flex justify-center">
                     <Link
                         href="/"
-                        className={`${cinzel.className} text-black font-bold uppercase tracking-[0.25em] text-xl hover:opacity-70 transition-opacity text-center flex items-center justify-center`}
+                        className={`${cinzel.className} text-black font-bold uppercase tracking-[0.1em] md:tracking-[0.25em] text-sm sm:text-base md:text-xl ...`}
                     >
                         CHICAGO IN M
                         <span className="inline-flex -mx-[0.12em]">
@@ -101,8 +101,8 @@ export function Navbar() {
                                             key={link.href}
                                             href={link.href}
                                             className={`px-6 py-4 text-[9px] uppercase tracking-[0.3em] transition-all duration-300 border-l-2 ${pathname === link.href
-                                                    ? 'border-red-700 text-red-500 bg-red-950/5'
-                                                    : 'border-transparent text-zinc-500 hover:text-red-600 hover:bg-red-950/5 hover:border-red-900/50'
+                                                ? 'border-red-700 text-red-500 bg-red-950/5'
+                                                : 'border-transparent text-zinc-500 hover:text-red-600 hover:bg-red-950/5 hover:border-red-900/50'
                                                 }`}
                                         >
                                             {link.name}
