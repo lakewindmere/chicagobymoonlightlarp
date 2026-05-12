@@ -77,7 +77,7 @@ export async function POST(req: Request) {
                     // Create the first donation record if it doesn't exist
                     await supabase.from('tickets').insert([{
                         stripe_session_id: session.id,
-                        user_email: 'contact@chicago-in-moonlight.com',
+                        user_email: 'ghoulbot@chicago-in-moonlight.com',
                         ticket_type: 'Donation Ticket',
                         quantity: purchasedDonationQty,
                         redeemed_count: 0,
