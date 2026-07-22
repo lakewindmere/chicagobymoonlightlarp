@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCart } from "../context/CartContext";
 import { Cinzel_Decorative, Cinzel } from 'next/font/google';
-import { useState } from "react";
+import { SyntheticEvent, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 
 const cinzel = Cinzel_Decorative({
@@ -23,7 +23,23 @@ const cinzelBody = Cinzel({
 export function Navbar() {
     const { cartCount } = useCart();
     const [isOpen, setIsOpen] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+    const detectOutsideClick = (event: PointerEvent) => {
+        if (ref.current && !ref.current.contains(event.currentTarget)) {
+            setIsOpen(false);
+        }
+    }
+    useEffect(() => {
+        document.addEventListener('click', detectOutsideClick, true);
+        return () => {
+            document.removeEventListener('click', detectOutsideClick, true);
+        }
+    }, [])
     const pathname = usePathname();
+
+    const toggleOpen = () => {
+        setIsOpen(!isOpen);
+    }
 
     const navLinks = [
         { name: 'Character Creation', href: '/character-creator' },
@@ -73,11 +89,12 @@ export function Navbar() {
                         </Link>
                         <div
                             className="relative group h-full flex items-center"
-                            onMouseEnter={() => setIsOpen(true)}
-                            onMouseLeave={() => setIsOpen(false)}
+                          
+                            ref={ref}
+
                         >
                             {/* The Trigger - Now looks exactly like a standard Nav Link */}
-                            <button className={`${cinzelBody.className} text-[11px] uppercase tracking-[0.3em] transition-all duration-300 flex items-center gap-2 ${isOpen ? 'text-red-700' : 'text-zinc-400 group-hover:text-red-700'
+                            <button onClick={toggleOpen} className={`${cinzelBody.className} text-[11px] uppercase tracking-[0.3em] transition-all duration-300 flex items-center gap-2 ${isOpen ? 'text-red-700' : 'text-zinc-400 group-hover:text-red-700'
                                 }`}>
                                 In-Character
                                 <svg
@@ -89,33 +106,35 @@ export function Navbar() {
                                 </svg>
                             </button>
 
-                            {/* The Dropdown Menu */}
-                            <div className={`absolute top-[100%] right-0 w-60 bg-black border border-zinc-900 shadow-[0_20px_50px_rgba(0,0,0,0.9)] transition-all duration-500 transform origin-top ${isOpen ? 'opacity-100 scale-y-100' : 'opacity-0 scale-y-0 pointer-events-none'
-                                }`}>
-                                {/* Decorative Top Accent Line */}
-                                <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-red-900/50 to-transparent"></div>
+                            {/* The Dropdown Menu, only render when mouse is over In-Character menu item */}
+                            { isOpen && (
+                                <div className={`absolute top-[100%] right-0 w-60 bg-black border border-zinc-900 shadow-[0_20px_50px_rgba(0,0,0,0.9)] transition-all duration-500 transform origin-top
+                                    }`}>
+                                    {/* Decorative Top Accent Line */}
+                                    <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-red-900/50 to-transparent"></div>
 
-                                <div className="py-1 flex flex-col">
-                                    {navLinks.map((link) => (
-                                        <Link
-                                            key={link.href}
-                                            href={link.href}
-                                            className={`px-6 py-4 text-[9px] uppercase tracking-[0.3em] transition-all duration-300 border-l-2 ${pathname === link.href
-                                                ? 'border-red-700 text-red-500 bg-red-950/5'
-                                                : 'border-transparent text-zinc-500 hover:text-red-600 hover:bg-red-950/5 hover:border-red-900/50'
-                                                }`}
-                                        >
-                                            {link.name}
-                                        </Link>
-                                    ))}
+                                    <div className="py-1 flex flex-col">
+                                        {navLinks.map((link) => (
+                                            <Link
+                                                key={link.href}
+                                                href={link.href}
+                                                className={`px-6 py-4 text-[9px] uppercase tracking-[0.3em] transition-all duration-300 border-l-2 ${pathname === link.href
+                                                    ? 'border-red-700 text-red-500 bg-red-950/5'
+                                                    : 'border-transparent text-zinc-500 hover:text-red-600 hover:bg-red-950/5 hover:border-red-900/50'
+                                                    }`}
+                                            >
+                                                {link.name}
+                                            </Link>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
                     </div>
 
                     {/* Right-aligned Cart Icon */}
                     <div className="flex justify-end md:flex-1">
-                        <Link href="/cart" id="cart-icon" className="relative group p-2">
+                        <Link href="/cart" id="cart-icon" className="relative group p-2" aria-label="Link to cart">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 width="22"
