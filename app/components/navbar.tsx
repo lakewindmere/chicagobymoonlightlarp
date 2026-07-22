@@ -24,8 +24,8 @@ export function Navbar() {
     const { cartCount } = useCart();
     const [isOpen, setIsOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
-    const detectOutsideClick = (event: PointerEvent) => {
-        if (ref.current && !ref.current.contains(event.currentTarget)) {
+    const detectOutsideClick = (event: MouseEvent) => {
+        if (ref.current && !ref.current.contains(event.currentTarget as Node)) {
             setIsOpen(false);
         }
     }
@@ -42,6 +42,11 @@ export function Navbar() {
     }
 
     const navLinks = [
+        { name: 'Information', href: '/information'},
+        { name: 'Night Market', href: '/store'}
+    ]
+
+    const subNavLinks = [
         { name: 'Character Creation', href: '/character-creator' },
         { name: 'Downtime Actions', href: '/downtime' },
     ];
@@ -67,31 +72,24 @@ export function Navbar() {
             </nav>
 
             {/* Sub Navigation */}
-            <nav className="w-full bg-black py-2 px-6 border-b border-zinc-900">
-                <div className="max-w-7xl mx-auto flex items-center justify-between">
-                    {/* Left-aligned spacing helper to keep links centered */}
-                    <div className="w-10 md:flex-1"></div>
-
+            <nav className="w-full bg-black py-4 px-6 border-b border-zinc-900">
+                <div className="max-w-7xl mx-auto flex flex-end items-center justify-between">
+    
                     {/* Centered Links */}
-                    <div className="flex items-center space-x-4">
-                        <Link
-                            href="/information"
-                            className={`${cinzelBody.className} px-4 py-1 text-zinc-400 hover:text-red-500 uppercase tracking-widest text-xs transition-all duration-300 rounded-sm border border-transparent hover:border-red-900/50 hover:bg-red-950/20 hover:shadow-[0_0_15px_rgba(153,27,27,0.2)]`}
-                        >
-                            Information
-                        </Link>
-
-                        <Link
-                            href="/store"
-                            className={`${cinzelBody.className} px-4 py-1 text-zinc-400 hover:text-red-500 uppercase tracking-widest text-xs transition-all duration-300 rounded-sm border border-transparent hover:border-red-900/50 hover:bg-red-950/20 hover:shadow-[0_0_15px_rgba(153,27,27,0.2)]`}
-                        >
-                            Night Market
-                        </Link>
+                   
+                    <div className="flex grow-2 items-center justify-center space-x-4">
+                         {navLinks.map((link) => {
+                            const linkClass = "px-4 py-1 text-zinc-400 hover:text-red-500 uppercase tracking-widest text-xs transition-all duration-300 rounded-sm border border-transparent hover:border-red-900/50 hover:bg-red-950/20 hover:shadow-[0_0_15px_rgba(153,27,27,0.2)]"
+                                return (
+                                    <Link key={link.href} href={link.href} className={`${cinzelBody.className} ${linkClass}`}>
+                                        {link.name}
+                                    </Link>
+                                )
+                            }
+                        )}
                         <div
                             className="relative group h-full flex items-center"
-                          
                             ref={ref}
-
                         >
                             {/* The Trigger - Now looks exactly like a standard Nav Link */}
                             <button onClick={toggleOpen} className={`${cinzelBody.className} text-[11px] uppercase tracking-[0.3em] transition-all duration-300 flex items-center gap-2 ${isOpen ? 'text-red-700' : 'text-zinc-400 group-hover:text-red-700'
@@ -114,7 +112,7 @@ export function Navbar() {
                                     <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-red-900/50 to-transparent"></div>
 
                                     <div className="py-1 flex flex-col">
-                                        {navLinks.map((link) => (
+                                        {subNavLinks.map((link) => (
                                             <Link
                                                 key={link.href}
                                                 href={link.href}
@@ -133,8 +131,8 @@ export function Navbar() {
                     </div>
 
                     {/* Right-aligned Cart Icon */}
-                    <div className="flex justify-end md:flex-1">
-                        <Link href="/cart" id="cart-icon" className="relative group p-2" aria-label="Link to cart">
+                    <div className="flex-none">
+                        <Link href="/cart" id="cart-icon" className="relative group" aria-label="Link to cart">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 width="22"
