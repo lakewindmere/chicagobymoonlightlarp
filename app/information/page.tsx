@@ -1,34 +1,36 @@
 'use client';
 
 import { Cinzel, Cinzel_Decorative } from 'next/font/google';
+import { eachWeekendOfMonth, getMonth, isBefore, isSaturday } from 'date-fns';
 
 const cinzel = Cinzel({ subsets: ['latin'], weight: ['400', '700', '900'] });
 const cinzelDeco = Cinzel_Decorative({ subsets: ['latin'], weight: ['700'] });
 
 function getEventDates(year: number) {
     const dates = [];
+    const today = new Date();
     const tbdDates = [
         new Date(year, 9, 31).toDateString(), // October 31
         new Date(year, 11, 26).toDateString() // December 26
     ];
 
-    for (let month = 0; month < 12; month++) {
-        const date = new Date(year, month + 1, 0);
-        while (date.getDay() !== 6) {
-            date.setDate(date.getDate() - 1);
+    const currentMonth = getMonth(today);
+    for (let i = currentMonth; i < 12; i++) {
+        const lastSat = eachWeekendOfMonth(new Date(year, i)).filter((date => isSaturday(date))).at(-1) as Date;
+        {/* Don't display Saturday of present month if in the past */}
+        if(isBefore(today, lastSat)) {
+            dates.push({
+                date: lastSat, 
+                isTBD: tbdDates.includes(lastSat.toDateString())
+            });
         }
-
-        dates.push({
-            date: new Date(date),
-            isTBD: tbdDates.includes(date.toDateString())
-        });
     }
     return dates;
+
 }
 
 export default function InformationPage() {
     const currentYear = new Date().getFullYear();
-    const today = new Date();
     const eventDates = getEventDates(currentYear);
 
     return (
@@ -73,33 +75,28 @@ export default function InformationPage() {
                         {/* We REMOVE cinzel from this container to let the site's default font take over */}
                         <div className="space-y-12 pl-4 md:pl-16 border-l border-zinc-900">
                             <p className="text-base md:text-lg leading-relaxed text-zinc-400 font-light">
-                                Elysium is held on the last Saturday of every month. The following dates are the scheduled gatherings for this cycle:
+                                Elysium is held on the last Saturday of every month. The following dates are the upcoming scheduled gatherings for this cycle:
                             </p>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {eventDates.map((item, index) => {
-                                    const isPast = item.date < today;
-
                                     return (
                                         <div
                                             key={index}
-                                            className={`flex justify-between items-center p-5 border transition-all duration-500 ${isPast
-                                                ? 'opacity-20 grayscale border-transparent'
-                                                : 'bg-zinc-950 border-red-900/20 hover:border-red-700/50 shadow-lg'
-                                                }`}
+                                            className={`flex justify-between items-center p-5 border transition-all duration-500 bg-zinc-950 border-red-900/20 hover:border-red-700/50 shadow-lg`}
                                         >
                                             {/* Left: Month */}
-                                            <span className={`${cinzel.className} uppercase tracking-widest text-sm ${isPast ? 'line-through' : 'text-zinc-200'}`}>
+                                            <span className={`${cinzel.className} uppercase tracking-widest text-sm text-zinc-200`}>
                                                 {item.date.toLocaleDateString('en-US', { month: 'long' })}
                                             </span>
 
                                             {/* Right: Date + TBD Status */}
                                             <div className="flex flex-col items-end">
-                                                <span className={`font-mono text-xl leading-none ${isPast ? 'line-through text-zinc-600' : 'text-red-700 font-bold'}`}>
+                                                <span className={`font-mono text-xl leading-none text-red-700 font-bold`}>
                                                     {item.date.toLocaleDateString('en-US', { day: 'numeric' })}
                                                 </span>
 
-                                                {item.isTBD && !isPast && (
+                                                {item.isTBD && (
                                                     <span className={`${cinzel.className} text-[10px] tracking-[0.2em] text-zinc-500 uppercase mt-1`}>
                                                         TBD
                                                     </span>
