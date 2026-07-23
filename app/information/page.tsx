@@ -1,5 +1,6 @@
 'use client';
 
+import { Timeline } from '@/components/timeline/TimeLine';
 import { Cinzel, Cinzel_Decorative } from 'next/font/google';
 
 const cinzel = Cinzel({ subsets: ['latin'], weight: ['400', '700', '900'] });
@@ -116,19 +117,9 @@ export default function InformationPage() {
                     <section>
                         <h2 className={`${cinzel.className} text-2xl md:text-3xl font-bold uppercase tracking-[0.2em] text-red-700 mb-10 flex items-center`}>
                             <span className="w-12 h-[1px] bg-red-700 mr-6"></span>
-                            Timing
+                            Session Itinerary
                         </h2>
-                        <div className="space-y-6 text-base md:text-lg leading-relaxed pl-4 md:pl-16 border-l border-zinc-900">
-                            <p>
-                                Doors open at <span className="text-red-700 font-bold">5:00 PM</span>. For Kindred new to the city, our Head Storyteller holds character workshops at <span className="text-zinc-200">6:00 PM</span>.
-                            </p>
-                            <p>
-                                All participants must arrive by <span className="text-zinc-200">6:30 PM</span>. Out-of-Character announcements begin at <span className="text-zinc-200">6:50 PM</span>, with the Court convening strictly at <span className="text-red-700 font-bold">7:00 PM</span>.
-                            </p>
-                            <p className="text-zinc-500 italic">
-                                The evening concludes at 11:00 PM. We appreciate assistance in restoring the haven to its original state.
-                            </p>
-                        </div>
+                        <Timeline />
                     </section>
 
                     {/* Location Section */}
