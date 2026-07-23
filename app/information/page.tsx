@@ -69,7 +69,7 @@ export default function InformationPage() {
                     <section>
                         <h2 className={`${cinzel.className} text-2xl md:text-3xl font-bold uppercase tracking-[0.2em] text-red-700 mb-10 flex items-center`}>
                             <span className="w-12 h-[1px] bg-red-700 mr-6"></span>
-                            {currentYear} Gathering Schedule
+                            {currentYear} Upcoming Gatherings
                         </h2>
 
                         {/* We REMOVE cinzel from this container to let the site's default font take over */}
