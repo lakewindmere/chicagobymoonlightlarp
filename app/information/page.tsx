@@ -1,7 +1,7 @@
 'use client';
 
 import { Cinzel, Cinzel_Decorative } from 'next/font/google';
-import { eachWeekendOfMonth, getMonth, isBefore, isSaturday } from 'date-fns';
+import { eachWeekendOfMonth, getMonth, isBefore, isSaturday, isToday } from 'date-fns';
 
 const cinzel = Cinzel({ subsets: ['latin'], weight: ['400', '700', '900'] });
 const cinzelDeco = Cinzel_Decorative({ subsets: ['latin'], weight: ['700'] });
@@ -18,7 +18,7 @@ function getEventDates(year: number) {
     for (let i = currentMonth; i < 12; i++) {
         const lastSat = eachWeekendOfMonth(new Date(year, i)).filter((date => isSaturday(date))).at(-1) as Date;
         {/* Don't display Saturday of present month if in the past */}
-        if(isBefore(today, lastSat)) {
+        if(isBefore(today, lastSat) || isToday(lastSat)) {
             dates.push({
                 date: lastSat, 
                 isTBD: tbdDates.includes(lastSat.toDateString())
